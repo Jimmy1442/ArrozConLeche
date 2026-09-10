@@ -1252,3 +1252,167 @@
     font-size: 20px;
   }
 }
+
+/* ═══════════════════════════════════════════
+   TABLA DE VENTAS - COMPACTA Y OPTIMIZADA
+   ═══════════════════════════════════════════ */
+
+/* Anchos específicos por columna */
+.tabla-ventas-desktop .data-table {
+  table-layout: fixed;
+  width: 100%;
+}
+
+/* 1. Checkbox */
+.tabla-ventas-desktop .data-table th:nth-child(1),
+.tabla-ventas-desktop .data-table td:nth-child(1) {
+  width: 40px;
+  padding-left: 12px;
+}
+
+/* 2. Cliente */
+.tabla-ventas-desktop .data-table th:nth-child(2),
+.tabla-ventas-desktop .data-table td:nth-child(2) {
+  width: 170px;
+}
+
+/* 3. Cantidad (centrado) */
+.tabla-ventas-desktop .data-table th:nth-child(3),
+.tabla-ventas-desktop .data-table td:nth-child(3) {
+  width: 70px;
+  text-align: center;
+}
+
+/* 4. Total */
+.tabla-ventas-desktop .data-table th:nth-child(4),
+.tabla-ventas-desktop .data-table td:nth-child(4) {
+  width: 100px;
+  text-align: right;
+}
+
+/* 5. Abonado */
+.tabla-ventas-desktop .data-table th:nth-child(5),
+.tabla-ventas-desktop .data-table td:nth-child(5) {
+  width: 100px;
+  text-align: right;
+}
+
+/* 6. Saldo */
+.tabla-ventas-desktop .data-table th:nth-child(6),
+.tabla-ventas-desktop .data-table td:nth-child(6) {
+  width: 100px;
+  text-align: right;
+}
+
+/* 7. Lote */
+.tabla-ventas-desktop .data-table th:nth-child(7),
+.tabla-ventas-desktop .data-table td:nth-child(7) {
+  width: 140px;
+}
+
+/* 8. Entrega */
+.tabla-ventas-desktop .data-table th:nth-child(8),
+.tabla-ventas-desktop .data-table td:nth-child(8) {
+  width: 100px;
+  text-align: center;
+}
+
+/* 9. Estado */
+.tabla-ventas-desktop .data-table th:nth-child(9),
+.tabla-ventas-desktop .data-table td:nth-child(9) {
+  width: 100px;
+  text-align: center;
+}
+
+/* 10. Fecha */
+.tabla-ventas-desktop .data-table th:nth-child(10),
+.tabla-ventas-desktop .data-table td:nth-child(10) {
+  width: 95px;
+  text-align: center;
+}
+
+/* 11. Acciones */
+.tabla-ventas-desktop .data-table th:nth-child(11),
+.tabla-ventas-desktop .data-table td:nth-child(11) {
+  width: 80px;
+  text-align: center;
+}
+
+/* Padding más compacto */
+.tabla-ventas-desktop .data-table th,
+.tabla-ventas-desktop .data-table td {
+  padding: 10px 6px;
+  font-size: 13px;
+}
+
+/* Header más chico */
+.tabla-ventas-desktop .data-table th {
+  font-size: 11px;
+  padding: 10px 6px;
+}
+
+/* Badges compactos */
+.tabla-ventas-desktop .data-table .badge {
+  font-size: 10px;
+  padding: 3px 7px;
+}
+
+/* Botones de acción compactos */
+.tabla-ventas-desktop .data-table .btn-icon {
+  width: 28px;
+  height: 28px;
+  font-size: 12px;
+}
+
+/* Cliente más compacto */
+.tabla-ventas-desktop .data-table td:nth-child(2) strong {
+  font-size: 13px;
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tabla-ventas-desktop .data-table td:nth-child(2) small {
+  font-size: 10px;
+  color: #8B7A66;
+}
+
+/* Números más compactos */
+.tabla-ventas-desktop .data-table td:nth-child(4),
+.tabla-ventas-desktop .data-table td:nth-child(5),
+.tabla-ventas-desktop .data-table td:nth-child(6) {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════
+   OCULTAR COLUMNAS EN PANTALLAS MEDIANAS
+   ═══════════════════════════════════════════ */
+
+/* ≤ 1400px: ocultar Lote */
+@media (max-width: 1400px) {
+  .tabla-ventas-desktop .data-table th:nth-child(7),
+  .tabla-ventas-desktop .data-table td:nth-child(7) {
+    display: none;
+  }
+}
+
+/* ≤ 1200px: ocultar Lote + Fecha */
+@media (max-width: 1200px) {
+  .tabla-ventas-desktop .data-table th:nth-child(10),
+  .tabla-ventas-desktop .data-table td:nth-child(10) {
+    display: none;
+  }
+}
+
+/* ≤ 1100px: ocultar Lote + Fecha + Estado */
+@media (max-width: 1100px) {
+  .tabla-ventas-desktop .data-table th:nth-child(9),
+  .tabla-ventas-desktop .data-table td:nth-child(9) {
+    display: none;
+  }
+}
+
+/* ≤ 1024px: la tabla se convierte en cards (ya lo tienes configurado) */

@@ -31,7 +31,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
     clienteId: '',
     cantidad: '',
     valorUnitario: '',
-    cantidadPagada: '',
+    abono: '',
     entrega: 'Pendiente',
     estado: 'Pendiente',
     loteId: ''
@@ -77,18 +77,18 @@ function Ventas({ usuario, onAbrirSidebar }) {
   // 🧮 Cálculos del formulario
   const cantidadNum = Number(nuevo.cantidad) || 0;
   const valorNum    = Number(nuevo.valorUnitario) || 0;
-  const pagadaNum   = Number(nuevo.cantidadPagada) || 0;
+  const abonoNum    = Number(nuevo.abono) || 0;
 
   const totalFormulario   = cantidadNum * valorNum;
-  const pagadoFormulario  = pagadaNum * valorNum;
+  const pagadoFormulario  = abonoNum;
   const saldoFormulario   = totalFormulario - pagadoFormulario;
 
   // 🧮 Cálculos del modal de edición
   const editCantidad = Number(editando?.cantidad) || 0;
   const editValor    = Number(editando?.valorUnitario) || 0;
-  const editPagada   = Number(editando?.cantidadPagada) || 0;
+  const editAbono    = Number(editando?.abono) || 0;
   const totalEditando  = editCantidad * editValor;
-  const pagadoEditando = editPagada * editValor;
+  const pagadoEditando = editAbono;
   const saldoEditando  = totalEditando - pagadoEditando;
 
   // ➕ Agregar venta
@@ -97,7 +97,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
     if (!cliente || !nuevo.cantidad || !nuevo.valorUnitario) return;
 
     const total = cantidadNum * valorNum;
-    const pagado = pagadaNum * valorNum;
+    const pagado = abonoNum;
     const saldo = total - pagado;
 
     const loteSeleccionado = lotes.find((l) => l.id === nuevo.loteId);
@@ -113,7 +113,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
         cantidad: cantidadNum,
         valorUnitario: valorNum,
         total,
-        cantidadPagada: pagadaNum,
+        abono: abonoNum,
         pagado,
         saldo,
         entrega: nuevo.entrega,
@@ -129,7 +129,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
         clienteId: '',
         cantidad: '',
         valorUnitario: '',
-        cantidadPagada: '',
+        abono: '',
         entrega: 'Pendiente',
         estado: 'Pendiente',
         loteId: ''
@@ -150,7 +150,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
     if (!cliente || !editando.cantidad || !editando.valorUnitario) return;
 
     const total = editCantidad * editValor;
-    const pagado = editPagada * editValor;
+    const pagado = editAbono;
     const saldo = total - pagado;
 
     const loteSeleccionado = lotes.find((l) => l.id === editando.loteId);
@@ -167,7 +167,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
         cantidad: editCantidad,
         valorUnitario: editValor,
         total,
-        cantidadPagada: editPagada,
+        abono: editAbono,
         pagado,
         saldo,
         entrega: editando.entrega || 'Pendiente',
@@ -237,28 +237,28 @@ function Ventas({ usuario, onAbrirSidebar }) {
     .reduce((s, v) => s + (v.saldo || 0), 0);
 
   const formatearFecha = (fecha) => {
-  if (!fecha) return '...';
+    if (!fecha) return '...';
 
-  // Timestamp de Firestore
-  if (fecha.toDate) {
-    return fecha.toDate().toLocaleDateString('es-CO');
-  }
-
-  // String "YYYY-MM-DD" → formatear sin timezone
-  if (typeof fecha === 'string') {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-      const [yyyy, mm, dd] = fecha.split('-');
-      return `${dd}/${mm}/${yyyy}`;
+    // Timestamp de Firestore
+    if (fecha.toDate) {
+      return fecha.toDate().toLocaleDateString('es-CO');
     }
-    if (fecha.includes('T')) {
-      const [datePart] = fecha.split('T');
-      const [yyyy, mm, dd] = datePart.split('-');
-      return `${dd}/${mm}/${yyyy}`;
-    }
-  }
 
-  return new Date(fecha).toLocaleDateString('es-CO');
-};
+    // String "YYYY-MM-DD" → formatear sin timezone
+    if (typeof fecha === 'string') {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+        const [yyyy, mm, dd] = fecha.split('-');
+        return `${dd}/${mm}/${yyyy}`;
+      }
+      if (fecha.includes('T')) {
+        const [datePart] = fecha.split('T');
+        const [yyyy, mm, dd] = datePart.split('-');
+        return `${dd}/${mm}/${yyyy}`;
+      }
+    }
+
+    return new Date(fecha).toLocaleDateString('es-CO');
+  };
 
   const colorEntrega = (e) =>
     e === 'Entregado' ? 'badge-verde' : 'badge-amarillo';
@@ -305,7 +305,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
                 </Button>
               )}
               <Button onClick={() => setMostrarForm(!mostrarForm)} fullWidth={false}>
-                {mostrarForm ? '✖ Cancelar' : '➕ Nueva venta'}
+                {mostrarForm ? '← Volver a la lista' : '➕ Nueva venta'}
               </Button>
             </div>
           </div>
@@ -391,20 +391,19 @@ function Ventas({ usuario, onAbrirSidebar }) {
                     </div>
 
                     <div className="form-field">
-                      <label>Cantidad pagada</label>
+                      <label>💵 Abono inicial</label>
                       <input
                         type="number"
                         placeholder="0"
                         min="0"
-                        max={nuevo.cantidad || undefined}
-                        step="1"
-                        value={nuevo.cantidadPagada}
+                        step="0.01"
+                        value={nuevo.abono}
                         onChange={(e) =>
-                          setNuevo({ ...nuevo, cantidadPagada: e.target.value })
+                          setNuevo({ ...nuevo, abono: e.target.value })
                         }
                       />
                       <small className="hint">
-                        💡 Cuántas unidades ya te pagó
+                        💡 Cuánto te pagó (puede ser menos del total)
                       </small>
                     </div>
 
@@ -440,7 +439,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
                       <label>Resumen</label>
                       <div className="total-preview">
                         Total: <strong>${totalFormulario.toLocaleString('es-CO')}</strong>
-                        {' '}· Pagado: <strong style={{ color: '#2A9D8F' }}>
+                        {' '}· Abonado: <strong style={{ color: '#2A9D8F' }}>
                           ${pagadoFormulario.toLocaleString('es-CO')}
                         </strong>
                         {' '}· Saldo: <strong style={{ color: '#F26B7A' }}>
@@ -485,7 +484,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
                       <th>Cliente</th>
                       <th>Cant.</th>
                       <th>Total</th>
-                      <th>Pagado</th>
+                      <th>Abonado</th>
                       <th>Saldo</th>
                       <th>Lote</th>
                       <th>Entrega</th>
@@ -531,17 +530,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
                                 {v.clienteTelefono}
                               </small>
                             </td>
-                            <td>
-                              {v.cantidad}
-                              {v.cantidadPagada > 0 && v.cantidadPagada < v.cantidad && (
-                                <>
-                                  <br />
-                                  <small style={{ color: '#2A9D8F' }}>
-                                    ✔ {v.cantidadPagada} pagada(s)
-                                  </small>
-                                </>
-                              )}
-                            </td>
+                            <td>{v.cantidad}</td>
                             <td>${v.total?.toLocaleString('es-CO')}</td>
                             <td>
                               <strong style={{ color: '#2A9D8F' }}>
@@ -585,7 +574,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
                                       ...v,
                                       cantidad: v.cantidad ?? '',
                                       valorUnitario: v.valorUnitario ?? '',
-                                      cantidadPagada: v.cantidadPagada ?? 0,
+                                      abono: v.abono ?? v.pagado ?? 0,
                                       loteId: v.loteId || ''
                                     })
                                   }
@@ -669,14 +658,12 @@ function Ventas({ usuario, onAbrirSidebar }) {
                         key={v.id}
                         className={`venta-card ${activo ? 'venta-card-activa' : ''}`}
                       >
-                        {/* Barra de color según estado */}
                         <div
                           className={`venta-card-barra ${
                             esPagado ? 'barra-verde' : 'barra-amarilla'
                           }`}
                         />
 
-                        {/* Header */}
                         <div className="venta-card-header">
                           <label className="venta-card-check">
                             <input
@@ -694,7 +681,6 @@ function Ventas({ usuario, onAbrirSidebar }) {
                           </div>
                         </div>
 
-                        {/* Total destacado */}
                         <div className="venta-card-total-destacado">
                           <span className="total-label">💰 Total</span>
                           <strong className="total-valor">
@@ -702,19 +688,13 @@ function Ventas({ usuario, onAbrirSidebar }) {
                           </strong>
                         </div>
 
-                        {/* Info grid */}
                         <div className="venta-card-info">
                           <div className="info-item">
                             <span className="info-label">📦 Cantidad</span>
                             <strong>{v.cantidad}</strong>
-                            {v.cantidadPagada > 0 && v.cantidadPagada < v.cantidad && (
-                              <small style={{ color: '#2A9D8F' }}>
-                                ✔ {v.cantidadPagada} pagada(s)
-                              </small>
-                            )}
                           </div>
                           <div className="info-item">
-                            <span className="info-label">✅ Pagado</span>
+                            <span className="info-label">✅ Abonado</span>
                             <strong style={{ color: '#2A9D8F' }}>
                               ${v.pagado?.toLocaleString('es-CO')}
                             </strong>
@@ -732,7 +712,6 @@ function Ventas({ usuario, onAbrirSidebar }) {
                           </div>
                         </div>
 
-                        {/* Badges */}
                         <div className="venta-card-badges">
                           {v.loteNombre && (
                             <span className="badge badge-verde">🍚 {v.loteNombre}</span>
@@ -745,7 +724,6 @@ function Ventas({ usuario, onAbrirSidebar }) {
                           </span>
                         </div>
 
-                        {/* Acciones */}
                         <div className="venta-card-acciones">
                           <button
                             className="btn-accion-card btn-editar"
@@ -754,7 +732,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
                                 ...v,
                                 cantidad: v.cantidad ?? '',
                                 valorUnitario: v.valorUnitario ?? '',
-                                cantidadPagada: v.cantidadPagada ?? 0,
+                                abono: v.abono ?? v.pagado ?? 0,
                                 loteId: v.loteId || ''
                               })
                             }
@@ -772,7 +750,6 @@ function Ventas({ usuario, onAbrirSidebar }) {
                     );
                   })}
 
-                  {/* Totales al final */}
                   <div className="ventas-totales-mobile">
                     <h4 className="totales-titulo">📊 Resumen general</h4>
                     <div className="total-row">
@@ -782,7 +759,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
                       </strong>
                     </div>
                     <div className="total-row">
-                      <span>✅ Total pagado</span>
+                      <span>✅ Total abonado</span>
                       <strong style={{ color: '#2A9D8F' }}>
                         ${totalPagado.toLocaleString('es-CO')}
                       </strong>
@@ -876,17 +853,19 @@ function Ventas({ usuario, onAbrirSidebar }) {
                 </div>
 
                 <div className="form-field">
-                  <label>Cantidad pagada</label>
+                  <label>💵 Abono</label>
                   <input
                     type="number"
                     min="0"
-                    max={editando.cantidad || undefined}
-                    step="1"
-                    value={editando.cantidadPagada}
+                    step="0.01"
+                    value={editando.abono}
                     onChange={(e) =>
-                      setEditando({ ...editando, cantidadPagada: e.target.value })
+                      setEditando({ ...editando, abono: e.target.value })
                     }
                   />
+                  <small className="hint">
+                    💡 Edítalo cuando el cliente pague más
+                  </small>
                 </div>
 
                 <div className="form-field">
@@ -921,7 +900,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
                   <label>Resumen</label>
                   <div className="total-preview">
                     Total: <strong>${totalEditando.toLocaleString('es-CO')}</strong>
-                    {' '}· Pagado: <strong style={{ color: '#2A9D8F' }}>
+                    {' '}· Abonado: <strong style={{ color: '#2A9D8F' }}>
                       ${pagadoEditando.toLocaleString('es-CO')}
                     </strong>
                     {' '}· Saldo: <strong style={{ color: '#F26B7A' }}>
