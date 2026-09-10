@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HashRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { auth } from './firebase';
 import Sidebar from './components/Sidebar';
 import Login from './pages/Login';
@@ -34,7 +34,7 @@ function App() {
   if (!usuario) return <Login onLogin={setUsuario} />;
 
   return (
-    <BrowserRouter>
+    <HashRouter>
       <Sidebar
         abierto={sidebarAbierto}
         onClose={() => setSidebarAbierto(false)}
@@ -91,7 +91,7 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
