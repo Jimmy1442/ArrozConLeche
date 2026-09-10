@@ -1,0 +1,63 @@
+@import './components.css';
+
+.home-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #3DC5B8 0%, #2A9D8F 100%);
+  font-family: 'Poppins', sans-serif;
+  padding: 20px;
+}
+
+.home-card {
+  background: #FFF8E7;
+  border-radius: 30px;
+  padding: 45px 35px;
+  max-width: 480px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(92, 58, 33, 0.25);
+  border: 4px solid #FFD93D;
+}
+
+.home-title {
+  font-family: 'Pacifico', cursive;
+  font-size: 42px;
+  color: #F26B7A;
+  margin-bottom: 8px;
+}
+
+.home-subtitle {
+  color: #2A9D8F;
+  font-weight: 600;
+  margin-bottom: 25px;
+}
+
+.home-info {
+  background: #FFF0D4;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 20px;
+  text-align: left;
+  color: #5C3A21;
+  font-size: 14px;
+  border-left: 4px solid #F26B7A;
+  word-break: break-all;
+}
+
+.home-info p {
+  margin: 6px 0;
+}
+
+.home-mensaje {
+  color: #5C3A21;
+  font-size: 15px;
+  margin-bottom: 25px;
+  line-height: 1.5;
+}
+
+.home-card .btn {
+  display: inline-block;
+  margin: 0 auto;
+}

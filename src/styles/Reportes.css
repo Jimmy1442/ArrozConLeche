@@ -1,0 +1,1026 @@
+@import './Modulos.css';
+
+/* ═══════════════════════════════════════════
+   HEADER
+   ═══════════════════════════════════════════ */
+.reportes-header {
+  margin-bottom: 20px;
+}
+
+.reportes-header h1 {
+  font-family: 'Pacifico', cursive;
+  font-size: 28px;
+  color: #5C3A21;
+  margin-bottom: 4px;
+  font-weight: 400;
+}
+
+.reportes-header p {
+  color: #8B7A66;
+  font-size: 14px;
+}
+
+/* ═══════════════════════════════════════════
+   FILTROS
+   ═══════════════════════════════════════════ */
+.filtros-panel {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 16px;
+  background: linear-gradient(135deg, #FFF8E7 0%, #FFF0D4 100%);
+  border: 2px solid #FFD93D;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 25px;
+  box-shadow: 0 4px 12px rgba(255, 217, 61, 0.15);
+}
+
+.filtro-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.filtro-grupo label {
+  font-size: 12px;
+  font-weight: 700;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.filtro-grupo select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid #E5D5B7;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  color: #5C3A21;
+  background: #FFFFFF;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.filtro-grupo select:focus {
+  outline: none;
+  border-color: #F26B7A;
+  box-shadow: 0 0 0 4px rgba(242, 107, 122, 0.12);
+}
+
+/* ═══════════════════════════════════════════
+   BANNER DEL LOTE SELECCIONADO
+   ═══════════════════════════════════════════ */
+.lote-seleccionado-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, #2A9D8F 0%, #3DC5B8 100%);
+  border-radius: 18px;
+  padding: 22px 28px;
+  margin-bottom: 25px;
+  color: #FFF8E7;
+  box-shadow: 0 8px 24px rgba(42, 157, 143, 0.3);
+  flex-wrap: wrap;
+}
+
+.lote-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background: #FFD93D;
+  color: #5C3A21;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.lote-seleccionado-banner h2 {
+  font-family: 'Pacifico', cursive;
+  font-size: 24px;
+  margin: 0 0 4px 0;
+  color: #FFD93D;
+  font-weight: 400;
+}
+
+.lote-seleccionado-banner p {
+  font-size: 13px;
+  opacity: 0.9;
+  margin: 0;
+}
+
+.btn-ver-todos {
+  padding: 12px 20px;
+  background: #FFF8E7;
+  color: #2A9D8F;
+  border: none;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
+}
+
+.btn-ver-todos:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* ═══════════════════════════════════════════
+   RESUMEN EJECUTIVO
+   ═══════════════════════════════════════════ */
+.resumen-ejecutivo {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+}
+
+.ejecutivo-item {
+  background: #FFF8E7;
+  border-radius: 14px;
+  padding: 18px 20px;
+  border-left: 4px solid #FFD93D;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ejecutivo-label {
+  font-size: 12px;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.ejecutivo-valor {
+  font-size: 24px;
+  font-weight: 700;
+  color: #5C3A21;
+}
+
+.ejecutivo-hint {
+  font-size: 12px;
+  color: #8B7A66;
+}
+
+/* ═══════════════════════════════════════════
+   GRID 2 COLUMNAS
+   ═══════════════════════════════════════════ */
+.reportes-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+/* ═══════════════════════════════════════════
+   GRÁFICO DE LOTES
+   ═══════════════════════════════════════════ */
+.grafico-lotes {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.grafico-lote-item {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px 20px;
+  background: #FFF8E7;
+  border-radius: 14px;
+  border-left: 4px solid #FFD93D;
+}
+
+.grafico-lote-nombre {
+  font-weight: 700;
+  color: #5C3A21;
+  font-size: 15px;
+}
+
+.grafico-lote-barras {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.grafico-lote-barra {
+  position: relative;
+  height: 26px;
+  background: #FFFFFF;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.grafico-lote-fill {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.8s ease;
+  min-width: 4px;
+}
+
+.fill-ventas {
+  background: linear-gradient(90deg, #2A9D8F, #3DC5B8);
+}
+
+.fill-costos {
+  background: linear-gradient(90deg, #F26B7A, #FFB3BC);
+}
+
+.grafico-lote-monto {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 12px;
+  font-weight: 700;
+  color: #5C3A21;
+}
+
+/* ═══════════════════════════════════════════
+   TABLA RANKING
+   ═══════════════════════════════════════════ */
+.tabla-ranking {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ranking-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: #FFF8E7;
+  border-radius: 12px;
+  transition: transform 0.2s ease;
+}
+
+.ranking-item:hover {
+  transform: translateX(4px);
+  background: #FFF0D4;
+}
+
+.ranking-pos {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: #E5D5B7;
+  color: #5C3A21;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.ranking-pos.pos-1 {
+  background: linear-gradient(135deg, #FFD93D, #FFC107);
+  box-shadow: 0 4px 10px rgba(255, 193, 7, 0.4);
+}
+
+.ranking-pos.pos-2 {
+  background: linear-gradient(135deg, #D3D3D3, #B0B0B0);
+}
+
+.ranking-pos.pos-3 {
+  background: linear-gradient(135deg, #E0A96D, #C68B4C);
+  color: #FFFFFF;
+}
+
+.ranking-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.ranking-info strong {
+  color: #5C3A21;
+  font-size: 14px;
+}
+
+.ranking-info small {
+  color: #8B7A66;
+  font-size: 11px;
+}
+
+.ranking-montos {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.ranking-montos strong {
+  font-size: 15px;
+}
+
+.ranking-montos small {
+  font-size: 11px;
+  font-weight: 600;
+  align-items: center;
+}
+
+/* ═══════════════════════════════════════════
+   LISTA INGREDIENTES
+   ═══════════════════════════════════════════ */
+.lista-ingredientes {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ingrediente-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ingrediente-header {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #5C3A21;
+}
+
+.ingrediente-header strong {
+  font-weight: 600;
+}
+
+.ingrediente-header span {
+  color: #F26B7A;
+  font-weight: 700;
+}
+
+.ingrediente-track {
+  height: 10px;
+  background: #FFF8E7;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.ingrediente-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3DC5B8, #2A9D8F);
+  border-radius: 6px;
+  transition: width 0.6s ease;
+}
+
+.ingrediente-cantidad {
+  font-size: 11px;
+  color: #8B7A66;
+}
+
+/* ═══════════════════════════════════════════
+   PANEL VACÍO
+   ═══════════════════════════════════════════ */
+.panel-vacio {
+  text-align: center;
+  padding: 30px 20px;
+  color: #8B7A66;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* ═══════════════════════════════════════════
+   CLIENTES CON DEUDA - TABLA + CARDS
+   ═══════════════════════════════════════════ */
+.tabla-deudas-desktop {
+  display: block;
+}
+
+.cards-deudas-mobile {
+  display: none;
+}
+
+.cliente-avatar-deuda {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F26B7A, #E55568);
+  color: #FFF8E7;
+  font-size: 13px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(242, 107, 122, 0.3);
+}
+
+.telefono-link {
+  color: #F26B7A;
+  text-decoration: none;
+  font-weight: 600;
+  transition: color 0.2s;
+}
+
+.telefono-link:hover {
+  color: #2A9D8F;
+}
+
+/* ═══════════════════════════════════════════
+   CARD DE DEUDA (mobile)
+   ═══════════════════════════════════════════ */
+.deuda-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  padding: 0;
+  border: 2px solid #FFD3D8;
+  box-shadow: 0 4px 12px rgba(242, 107, 122, 0.12);
+  transition: all 0.25s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.deuda-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(242, 107, 122, 0.2);
+  border-color: #F26B7A;
+}
+
+.deuda-card-barra {
+  height: 5px;
+  width: 100%;
+  background: linear-gradient(90deg, #F26B7A, #E55568);
+}
+
+.deuda-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 2px dashed #F0EAD8;
+}
+
+.deuda-card-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #F26B7A, #E55568);
+  color: #FFF8E7;
+  font-size: 20px;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 12px rgba(242, 107, 122, 0.3);
+}
+
+.deuda-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.deuda-card-info strong {
+  color: #5C3A21;
+  font-size: 16px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deuda-card-telefono {
+  color: #8B7A66;
+  font-size: 12px;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.deuda-card-pedidos {
+  padding: 6px 12px;
+  background: #FFF8E7;
+  border-radius: 10px;
+  font-size: 13px;
+  font-weight: 800;
+  color: #5C3A21;
+  flex-shrink: 0;
+  border: 2px solid #FFD93D;
+}
+
+.deuda-card-deuda {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #FFE5E8, #FFD3D8);
+  border-bottom: 2px solid #F26B7A;
+}
+
+.deuda-label {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #5C3A21;
+}
+
+.deuda-valor {
+  font-size: 24px;
+  font-weight: 800;
+  color: #C7394A;
+  letter-spacing: -0.5px;
+}
+
+.deuda-card-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.deuda-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: #FFF8E7;
+  border-radius: 12px;
+  border-left: 3px solid #FFD93D;
+}
+
+.deuda-info-label {
+  font-size: 10px;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.deuda-info-item strong {
+  color: #5C3A21;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.deuda-card-progreso {
+  padding: 0 16px 16px;
+}
+
+.deuda-progreso-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #8B7A66;
+  font-weight: 600;
+}
+
+.deuda-progreso-header strong {
+  color: #2A9D8F;
+  font-weight: 800;
+}
+
+.deuda-progreso-track {
+  height: 10px;
+  background: #FFF8E7;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #F0EAD8;
+}
+
+.deuda-progreso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3DC5B8, #2A9D8F);
+  border-radius: 6px;
+  transition: width 0.8s ease;
+}
+
+.deuda-card-acciones-single {
+  padding: 14px 16px;
+  background: #FAF6EE;
+  border-top: 2px dashed #F0EAD8;
+}
+
+.btn-accion-deuda {
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.btn-whatsapp {
+  background: #E8F9F0;
+  color: #1E7A4C;
+  border: 2px solid #7ED9A8;
+}
+
+.btn-whatsapp:hover,
+.btn-whatsapp:active {
+  background: #25D366;
+  color: #FFFFFF;
+  border-color: #25D366;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(37, 211, 102, 0.4);
+}
+
+/* ═══════════════════════════════════════════
+   REPORTES - VISTA MOBILE CON CARDS
+   ═══════════════════════════════════════════ */
+.tabla-reportes-desktop {
+  display: block;
+}
+
+.cards-reportes-mobile {
+  display: none;
+}
+
+.reporte-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  padding: 0;
+  border: 2px solid #F0EAD8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.reporte-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: #FFD93D;
+}
+
+.reporte-card-barra {
+  height: 5px;
+  width: 100%;
+}
+
+.reporte-card-barra.barra-verde {
+  background: linear-gradient(90deg, #2A9D8F, #3DC5B8);
+}
+
+.reporte-card-barra.barra-roja {
+  background: linear-gradient(90deg, #F26B7A, #E55568);
+}
+
+.reporte-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 2px dashed #F0EAD8;
+}
+
+.reporte-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.reporte-card-info strong {
+  color: #5C3A21;
+  font-size: 16px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.reporte-card-info small {
+  color: #8B7A66;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.reporte-card-margen {
+  padding: 6px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  font-weight: 800;
+  flex-shrink: 0;
+  letter-spacing: -0.3px;
+}
+
+.reporte-card-ganancia {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 2px solid;
+}
+
+.reporte-card-ganancia.ganancia-positiva {
+  background: linear-gradient(135deg, #E8F9F0, #D3F5E0);
+  border-bottom-color: #7ED9A8;
+}
+
+.reporte-card-ganancia.ganancia-negativa {
+  background: linear-gradient(135deg, #FFE5E8, #FFD3D8);
+  border-bottom-color: #F26B7A;
+}
+
+.reporte-ganancia-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #5C3A21;
+}
+
+.reporte-ganancia-valor {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.ganancia-positiva .reporte-ganancia-valor {
+  color: #1E7A4C;
+}
+
+.ganancia-negativa .reporte-ganancia-valor {
+  color: #C7394A;
+}
+
+.reporte-card-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.reporte-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: #FFF8E7;
+  border-radius: 12px;
+  border-left: 3px solid #FFD93D;
+}
+
+.reporte-info-full {
+  grid-column: 1 / -1;
+  border-left-color: #F26B7A;
+}
+
+.reporte-info-label {
+  font-size: 10px;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.reporte-info-item strong {
+  color: #5C3A21;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.reporte-card-progreso {
+  padding: 0 16px 16px;
+}
+
+.reporte-progreso-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+  font-size: 12px;
+  color: #8B7A66;
+  font-weight: 600;
+}
+
+.reporte-progreso-header strong {
+  color: #2A9D8F;
+  font-weight: 800;
+}
+
+.reporte-progreso-track {
+  height: 10px;
+  background: #FFF8E7;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #F0EAD8;
+}
+
+.reporte-progreso-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3DC5B8, #2A9D8F);
+  border-radius: 6px;
+  transition: width 0.8s ease;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+
+/* 📱 TABLET Y CELULAR (≤ 1024px) */
+@media (max-width: 1024px) {
+  /* Reportes: ocultar tabla, mostrar cards */
+  .tabla-reportes-desktop {
+    display: none;
+  }
+
+  .cards-reportes-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* Deudas: ocultar tabla, mostrar cards */
+  .tabla-deudas-desktop {
+    display: none;
+  }
+
+  .cards-deudas-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* Filtros → 1 columna */
+  .filtros-panel {
+    grid-template-columns: 1fr;
+    padding: 15px;
+    gap: 12px;
+  }
+
+  /* Reportes grid 2 → 1 */
+  .reportes-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  /* Resumen ejecutivo → 2 columnas */
+  .resumen-ejecutivo {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 📱 CELULAR (≤ 768px) */
+@media (max-width: 768px) {
+  .reportes-header h1 {
+    font-size: 20px;
+  }
+
+  .reportes-header p {
+    font-size: 13px;
+  }
+
+  .filtro-grupo label {
+    font-size: 11px;
+  }
+
+  .filtro-grupo select {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  /* Banner del lote */
+  .lote-seleccionado-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .lote-seleccionado-banner h2 {
+    font-size: 18px;
+  }
+
+  .btn-ver-todos {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Resumen ejecutivo → 1 columna */
+  .resumen-ejecutivo {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .ejecutivo-item {
+    padding: 14px 16px;
+  }
+
+  .ejecutivo-valor {
+    font-size: 20px;
+  }
+
+  /* Reportes grid 2 → 1 */
+  .reportes-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  /* Ranking */
+  .ranking-item {
+    padding: 10px 12px;
+  }
+
+  .ranking-pos {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  .ranking-info strong {
+    font-size: 13px;
+  }
+
+  .ranking-info small {
+    font-size: 10px;
+  }
+
+  .ranking-montos strong {
+    font-size: 13px;
+  }
+
+  /* Ingredientes */
+  .ingrediente-header {
+    font-size: 12px;
+  }
+
+  .ingrediente-cantidad {
+    font-size: 10px;
+  }
+
+  /* Gráfico de lotes */
+  .grafico-lote-item {
+    padding: 14px;
+  }
+
+  .grafico-lote-nombre {
+    font-size: 13px;
+  }
+
+  .grafico-lote-barra {
+    height: 22px;
+  }
+
+  .grafico-lote-monto {
+    font-size: 11px;
+    right: 8px;
+  }
+}
+
+/* 📱 CELULAR PEQUEÑO (≤ 480px) */
+@media (max-width: 480px) {
+  .reporte-card-info strong {
+    font-size: 15px;
+  }
+
+  .reporte-ganancia-valor {
+    font-size: 22px;
+  }
+
+  .reporte-info-item strong {
+    font-size: 15px;
+  }
+
+  .reporte-card-margen {
+    font-size: 12px;
+    padding: 5px 10px;
+  }
+
+  /* Deudas */
+  .deuda-card-info strong {
+    font-size: 15px;
+  }
+
+  .deuda-valor {
+    font-size: 22px;
+  }
+
+  .deuda-card-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+
+  .deuda-info-item strong {
+    font-size: 14px;
+  }
+
+  .btn-accion-deuda {
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+}

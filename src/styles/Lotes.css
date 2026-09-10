@@ -1,0 +1,1134 @@
+@import './Modulos.css';
+
+/* ═══════════════════════════════════════════
+   TÍTULOS DE SECCIÓN
+   ═══════════════════════════════════════════ */
+.form-seccion-titulo {
+  font-size: 15px;
+  font-weight: 700;
+  color: #5C3A21;
+  margin-top: 10px;
+  padding-top: 15px;
+  border-top: 2px dashed #E5D5B7;
+}
+
+.form-seccion-titulo:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* ═══════════════════════════════════════════
+   VERIFICACIÓN
+   ═══════════════════════════════════════════ */
+.verificacion {
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  text-align: center;
+}
+
+.verificacion.ok {
+  background: #D3F5E0;
+  color: #1E7A4C;
+  border: 2px solid #7ED9A8;
+}
+
+.verificacion.alerta {
+  background: #FFF3C4;
+  color: #9C7A00;
+  border: 2px solid #FFD93D;
+}
+
+/* ═══════════════════════════════════════════
+   FORMULARIO DE INGREDIENTE (REDISEÑADO)
+   ═══════════════════════════════════════════ */
+.ingrediente-form-card {
+  background: linear-gradient(135deg, #FFF8E7 0%, #FFF0D4 100%);
+  border: 2px solid #FFD93D;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(255, 217, 61, 0.15);
+}
+
+.ingrediente-form-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 18px;
+  padding-bottom: 12px;
+  border-bottom: 2px dashed #FFD93D;
+}
+
+.ingrediente-form-icon {
+  font-size: 18px;
+}
+
+.ingrediente-form-title {
+  color: #5C3A21;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+.ingrediente-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1.2fr;
+  gap: 14px;
+}
+
+.ingrediente-form-full {
+  grid-column: 1 / -1;
+}
+
+.ingrediente-form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ingrediente-form-field label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ingrediente-form-field input,
+.ingrediente-form-field select {
+  width: 100%;
+  padding: 11px 14px;
+  border: 2px solid #E5D5B7;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: 'Poppins', sans-serif;
+  color: #5C3A21;
+  background: #FFFFFF;
+  transition: all 0.25s ease;
+  box-sizing: border-box;
+}
+
+.ingrediente-form-field input:focus,
+.ingrediente-form-field select:focus {
+  outline: none;
+  border-color: #F26B7A;
+  box-shadow: 0 0 0 4px rgba(242, 107, 122, 0.12);
+}
+
+.ingrediente-form-subtotal {
+  padding: 11px 14px;
+  background: #FFFFFF;
+  border: 2px solid #E5D5B7;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #F26B7A;
+  text-align: right;
+}
+
+.btn-add-ingrediente {
+  grid-column: 1 / -1;
+  padding: 14px 24px;
+  margin-top: 6px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #3DC5B8 0%, #2A9D8F 100%);
+  color: #FFF8E7;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 6px 15px rgba(42, 157, 143, 0.25);
+}
+
+.btn-add-ingrediente:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(42, 157, 143, 0.4);
+}
+
+.btn-add-ingrediente:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-add-ingrediente:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* ═══════════════════════════════════════════
+   LISTA DE INGREDIENTES (TABLA)
+   ═══════════════════════════════════════════ */
+.ingredientes-tabla {
+  margin-top: 12px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 2px solid #F0EAD8;
+}
+
+.ingrediente-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr auto;
+  gap: 8px;
+  padding: 10px 14px;
+  align-items: center;
+  font-size: 13px;
+  border-bottom: 1px solid #F0EAD8;
+}
+
+.ingrediente-row:last-child {
+  border-bottom: none;
+}
+
+.ingrediente-nombre {
+  color: #5C3A21;
+  font-weight: 600;
+}
+
+.ingrediente-cant {
+  color: #8B7A66;
+}
+
+.ingrediente-precio {
+  color: #8B7A66;
+}
+
+.ingrediente-subtotal {
+  color: #F26B7A;
+  font-weight: 700;
+}
+
+.ingredientes-total {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px;
+  background: #FFF8E7;
+  border-top: 2px solid #FFD93D;
+  font-weight: 700;
+  color: #5C3A21;
+}
+
+.ingredientes-total strong {
+  color: #F26B7A;
+  font-size: 16px;
+}
+
+/* ═══════════════════════════════════════════
+   RESUMEN FINANCIERO
+   ═══════════════════════════════════════════ */
+.resumen-lote {
+  background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
+  border: 2px solid #FFD93D;
+  border-radius: 14px;
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.resumen-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px;
+  color: #5C3A21;
+  gap: 10px;
+}
+
+.resumen-item strong {
+  font-size: 16px;
+  white-space: nowrap;
+}
+
+.resumen-total {
+  padding-top: 12px;
+  border-top: 2px dashed #E5D5B7;
+  font-size: 16px;
+}
+
+.resumen-total strong {
+  font-size: 20px;
+}
+
+/* ═══════════════════════════════════════════
+   INFO BOX
+   ═══════════════════════════════════════════ */
+.info-box {
+  background: #FFF8E7;
+  border: 2px dashed #E5D5B7;
+  border-radius: 12px;
+  padding: 16px 18px;
+  font-size: 14px;
+  color: #5C3A21;
+  line-height: 1.7;
+}
+
+.info-box .resumen-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid #F0EAD8;
+}
+
+.info-box .resumen-item:last-child {
+  border-bottom: none;
+}
+
+/* ═══════════════════════════════════════════
+   MODAL XL
+   ═══════════════════════════════════════════ */
+.modal-card-xl {
+  max-width: 900px !important;
+  width: 95% !important;
+  max-height: 92vh;
+  overflow-y: auto;
+  border-radius: 22px;
+}
+
+.modal-header-custom {
+  position: sticky;
+  top: 0;
+  background: #FFF8E7;
+  z-index: 10;
+  border-bottom: 2px solid #F0EAD8;
+  padding: 20px 30px;
+}
+
+.modal-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.modal-header-info h3 {
+  color: #5C3A21;
+  font-size: 20px;
+  font-family: 'Pacifico', cursive;
+  font-weight: 400;
+  margin: 0;
+}
+
+.modal-header-stats {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: #8B7A66;
+}
+
+.modal-header-stats span strong {
+  color: #5C3A21;
+}
+
+.modal-body-custom {
+  padding: 25px 30px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.modal-footer-custom {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 30px;
+  border-top: 2px solid #F0EAD8;
+  position: sticky;
+  bottom: 0;
+  background: #FFF8E7;
+  z-index: 10;
+}
+
+/* ═══════════════════════════════════════════
+   SECCIONES DEL MODAL
+   ═══════════════════════════════════════════ */
+.modal-seccion {
+  background: #FFFFFF;
+  border: 2px solid #F0EAD8;
+  border-radius: 16px;
+  overflow: hidden;
+  transition: border-color 0.2s ease;
+}
+
+.modal-seccion:hover {
+  border-color: #FFD93D;
+}
+
+.modal-seccion-titulo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px;
+  background: #FFF8E7;
+  border-bottom: 2px solid #F0EAD8;
+  color: #5C3A21;
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.modal-seccion-titulo small {
+  font-size: 12px;
+  font-weight: 500;
+  color: #8B7A66;
+}
+
+.modal-seccion-content {
+  padding: 20px;
+}
+
+/* ═══════════════════════════════════════════
+   INGREDIENTES EDITABLES EN LÍNEA
+   ═══════════════════════════════════════════ */
+.ingredientes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.ingrediente-editable {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1.2fr auto;
+  gap: 10px;
+  align-items: center;
+  padding: 12px 16px;
+  background: #FFF8E7;
+  border-radius: 12px;
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.ingrediente-editable:hover {
+  border-color: #FFD93D;
+  background: #FFF0D4;
+}
+
+.ingrediente-editable.editando {
+  background: #FFFFFF;
+  border-color: #3DC5B8;
+  box-shadow: 0 4px 12px rgba(61, 197, 184, 0.15);
+}
+
+.ingrediente-editable input,
+.ingrediente-editable select {
+  padding: 8px 12px;
+  border: 2px solid #E5D5B7;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: 'Poppins', sans-serif;
+  color: #5C3A21;
+  background: #FFFFFF;
+  min-width: 0;
+}
+
+.ingrediente-editable input:focus,
+.ingrediente-editable select:focus {
+  outline: none;
+  border-color: #F26B7A;
+}
+
+.ing-nombre {
+  color: #5C3A21;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.ing-cant {
+  color: #8B7A66;
+  font-size: 13px;
+}
+
+.ing-precio {
+  color: #8B7A66;
+  font-size: 13px;
+}
+
+.ing-subtotal {
+  color: #F26B7A;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.ingrediente-acciones {
+  display: flex;
+  gap: 6px;
+}
+
+.btn-accion {
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  background: #FFFFFF;
+}
+
+.btn-accion:hover {
+  transform: scale(1.08);
+}
+
+.btn-edit:hover {
+  background: #FFF3C4;
+}
+
+.btn-delete:hover {
+  background: #FFD3D3;
+}
+
+.btn-ok {
+  background: #D3F5E0;
+  color: #1E7A4C;
+}
+
+.btn-ok:hover {
+  background: #7ED9A8;
+}
+
+.btn-cancel {
+  background: #FFD3D3;
+  color: #9C1E1E;
+}
+
+.btn-cancel:hover {
+  background: #FFAAAA;
+}
+
+/* Total de ingredientes */
+.ingredientes-total-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
+  border: 2px solid #FFD93D;
+  border-radius: 12px;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #5C3A21;
+}
+
+.ingredientes-total-box strong {
+  color: #F26B7A;
+  font-size: 18px;
+}
+
+/* Empty state */
+.empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: #8B7A66;
+  font-size: 14px;
+  background: #FFF8E7;
+  border-radius: 12px;
+  border: 2px dashed #E5D5B7;
+}
+
+/* ═══════════════════════════════════════════
+   DISTRIBUCIÓN - TARJETAS
+   ═══════════════════════════════════════════ */
+.distribucion-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 15px;
+}
+
+@media (max-width: 700px) {
+  .distribucion-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dist-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 18px 14px;
+  border-radius: 14px;
+  text-align: center;
+  border: 2px solid;
+}
+
+.dist-verde {
+  background: #F0FDF4;
+  border-color: #7ED9A8;
+}
+
+.dist-coral {
+  background: #FFF5F6;
+  border-color: #FFB3BC;
+}
+
+.dist-azul {
+  background: #F0F9FF;
+  border-color: #B3D9F2;
+}
+
+.dist-label {
+  font-size: 12px;
+  color: #8B7A66;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.dist-valor {
+  font-size: 26px;
+  font-weight: 700;
+  color: #5C3A21;
+}
+
+.dist-input {
+  width: 100%;
+  max-width: 100px;
+  padding: 8px 12px;
+  border: 2px solid #E5D5B7;
+  border-radius: 8px;
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+  color: #5C3A21;
+  background: #FFFFFF;
+}
+
+.dist-input:focus {
+  outline: none;
+  border-color: #F26B7A;
+}
+
+.dist-card small {
+  font-size: 10px;
+  color: #8B7A66;
+  line-height: 1.3;
+}
+
+/* ═══════════════════════════════════════════
+   RESUMEN FINANCIERO (MODAL)
+   ═══════════════════════════════════════════ */
+.resumen-financiero {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1.2fr;
+  gap: 14px;
+  margin-bottom: 15px;
+}
+
+@media (max-width: 700px) {
+  .resumen-financiero {
+    grid-template-columns: 1fr;
+  }
+}
+
+.resumen-fin-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px;
+  background: #FFF8E7;
+  border-radius: 14px;
+  border-left: 4px solid #FFD93D;
+}
+
+.resumen-fin-total {
+  background: linear-gradient(135deg, #FFF0D4, #FFE5B8);
+  border-left-color: #F26B7A;
+}
+
+.resumen-fin-label {
+  font-size: 12px;
+  color: #8B7A66;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.resumen-fin-valor {
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.ventas-info-box {
+  background: #F0F9FF;
+  border: 2px dashed #B3D9F2;
+  border-radius: 12px;
+  padding: 14px 18px;
+  font-size: 13px;
+  color: #1E5A7A;
+}
+
+.ventas-info-box p {
+  margin: 0;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media (max-width: 700px) {
+  .ingrediente-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ingrediente-form-full {
+    grid-column: 1 / -1;
+  }
+
+  .btn-add-ingrediente {
+    grid-column: 1 / -1;
+  }
+
+  .modal-card-xl {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  .ingrediente-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+  }
+
+  .ingrediente-nombre {
+    grid-column: 1 / -1;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE - LOTES (MODAL XL)
+   ═══════════════════════════════════════════ */
+
+/* 📱 TABLET (≤ 1024px) */
+@media (max-width: 1024px) {
+  .modal-card-xl {
+    max-width: 95% !important;
+  }
+
+  .ingrediente-form-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ingrediente-form-full {
+    grid-column: 1 / -1;
+  }
+
+  .btn-add-ingrediente {
+    grid-column: 1 / -1;
+  }
+}
+
+/* 📱 CELULAR (≤ 768px) */
+@media (max-width: 768px) {
+  .modal-card-xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    border-radius: 18px 18px 0 0;
+    max-height: 95vh;
+  }
+
+  .modal-header-custom {
+    padding: 16px 18px;
+  }
+
+  .modal-header-info h3 {
+    font-size: 16px;
+  }
+
+  .modal-header-stats {
+    font-size: 11px;
+    gap: 10px;
+  }
+
+  .modal-body-custom {
+    padding: 15px 18px;
+    gap: 15px;
+  }
+
+  .modal-footer-custom {
+    padding: 15px 18px;
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .modal-footer-custom .btn {
+    width: 100% !important;
+  }
+
+  /* Secciones del modal */
+  .modal-seccion-titulo {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .modal-seccion-content {
+    padding: 15px;
+  }
+
+  /* Ingredientes */
+  .ingrediente-form-card {
+    padding: 15px;
+  }
+
+  .ingrediente-form-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .ingrediente-form-field input,
+  .ingrediente-form-field select {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .ingrediente-form-subtotal {
+    font-size: 14px;
+    padding: 10px 12px;
+  }
+
+  .btn-add-ingrediente {
+    padding: 12px 18px;
+    font-size: 14px;
+  }
+
+  /* Lista de ingredientes */
+  .ingrediente-editable {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .ing-nombre {
+    grid-column: 1 / -1;
+    font-size: 13px;
+  }
+
+  .ing-cant,
+  .ing-precio {
+    font-size: 12px;
+  }
+
+  .ing-subtotal {
+    font-size: 13px;
+  }
+
+  .ingrediente-acciones {
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+  }
+
+  .btn-accion {
+    width: 36px;
+    height: 36px;
+  }
+
+  .ingredientes-total-box {
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+
+  .ingredientes-total-box strong {
+    font-size: 16px;
+  }
+
+  /* Distribución */
+  .distribucion-grid {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .dist-card {
+    padding: 14px 12px;
+  }
+
+  .dist-valor {
+    font-size: 22px;
+  }
+
+  .dist-input {
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  /* Resumen financiero */
+  .resumen-financiero {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .resumen-fin-card {
+    padding: 14px 16px;
+  }
+
+  .resumen-fin-valor {
+    font-size: 18px;
+  }
+
+  .ventas-info-box {
+    padding: 12px 14px;
+    font-size: 12px;
+  }
+}
+
+/* 📱 CELULAR PEQUEÑO (≤ 480px) */
+@media (max-width: 480px) {
+  .modal-header-info h3 {
+    font-size: 14px;
+  }
+
+  .modal-header-stats {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .modal-body-custom {
+    padding: 12px;
+  }
+
+  .modal-seccion-content {
+    padding: 12px;
+  }
+
+  .ingrediente-form-card {
+    padding: 12px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   LOTES - VISTA MOBILE CON CARDS
+   ═══════════════════════════════════════════ */
+
+.tabla-lotes-desktop {
+  display: block;
+}
+
+.cards-lotes-mobile {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .tabla-lotes-desktop {
+    display: none;
+  }
+
+  .cards-lotes-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   CARD DE LOTE (MOBILE)
+   ═══════════════════════════════════════════ */
+.lote-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  padding: 0;
+  border: 2px solid #F0EAD8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.lote-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: #FFD93D;
+}
+
+.lote-card-activa {
+  border-color: #F26B7A;
+  box-shadow: 0 8px 22px rgba(242, 107, 122, 0.25);
+}
+
+.lote-card-barra {
+  height: 5px;
+  width: 100%;
+}
+
+.barra-verde {
+  background: linear-gradient(90deg, #2A9D8F, #3DC5B8);
+}
+
+.barra-roja {
+  background: linear-gradient(90deg, #F26B7A, #E55568);
+}
+
+.lote-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-bottom: 2px dashed #F0EAD8;
+}
+
+.lote-card-check {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.lote-card-check input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  accent-color: #F26B7A;
+  cursor: pointer;
+  margin: 0;
+}
+
+.lote-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.lote-card-info strong {
+  color: #5C3A21;
+  font-size: 16px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lote-card-info small {
+  color: #8B7A66;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.lote-card-ganancia {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 2px solid;
+}
+
+.ganancia-positiva {
+  background: linear-gradient(135deg, #E8F9F0, #D3F5E0);
+  border-bottom-color: #7ED9A8;
+}
+
+.ganancia-negativa {
+  background: linear-gradient(135deg, #FFE5E8, #FFD3D8);
+  border-bottom-color: #F26B7A;
+}
+
+.ganancia-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #5C3A21;
+}
+
+.ganancia-valor {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.ganancia-positiva .ganancia-valor {
+  color: #1E7A4C;
+}
+
+.ganancia-negativa .ganancia-valor {
+  color: #C7394A;
+}
+
+.lote-card-info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 14px 16px;
+}
+
+.lote-info-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px;
+  background: #FFF8E7;
+  border-radius: 12px;
+  border-left: 3px solid #FFD93D;
+}
+
+.lote-info-full {
+  grid-column: 1 / -1;
+  border-left-color: #F26B7A;
+}
+
+.lote-info-label {
+  font-size: 10px;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.lote-info-item strong {
+  color: #5C3A21;
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.lote-info-item small {
+  font-size: 10px;
+  color: #8B7A66;
+  font-weight: 600;
+}
+
+.lote-card-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 16px 14px;
+}
+
+.lote-card-badges .badge {
+  font-size: 11px;
+  padding: 5px 10px;
+  font-weight: 700;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lote-card-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #FAF6EE;
+  border-top: 2px dashed #F0EAD8;
+}
+
+@media (max-width: 480px) {
+  .lote-card-info strong {
+    font-size: 15px;
+  }
+
+  .ganancia-valor {
+    font-size: 22px;
+  }
+
+  .lote-info-item strong {
+    font-size: 15px;
+  }
+}
