@@ -1415,3 +1415,895 @@
   }
 }
 
+/* ═══════════════════════════════════════════
+   TABLA DE VENTAS - SCROLL VERTICAL
+   ═══════════════════════════════════════════ */
+.tabla-ventas-desktop .table-wrapper {
+  max-height: 550px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 2px solid #F0EAD8;
+}
+
+/* Scroll personalizado (Chrome/Safari/Edge) */
+.tabla-ventas-desktop .table-wrapper::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.tabla-ventas-desktop .table-wrapper::-webkit-scrollbar-track {
+  background: #FFF8E7;
+  border-radius: 10px;
+}
+
+.tabla-ventas-desktop .table-wrapper::-webkit-scrollbar-thumb {
+  background: #E5D5B7;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.tabla-ventas-desktop .table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #F26B7A;
+}
+
+/* Firefox */
+.tabla-ventas-desktop .table-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #E5D5B7 #FFF8E7;
+}
+
+/* Encabezado pegajoso al hacer scroll */
+.tabla-ventas-desktop .data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.tabla-ventas-desktop .data-table thead th {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ═══════════════════════════════════════════
+   PAGINACIÓN
+   ═══════════════════════════════════════════ */
+.paginacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  background: #FFF8E7;
+  border-top: 2px solid #F0EAD8;
+  border-radius: 0 0 12px 12px;
+  flex-wrap: wrap;
+}
+
+.paginacion-info {
+  font-size: 13px;
+  color: #8B7A66;
+  font-weight: 500;
+}
+
+.paginacion-info strong {
+  color: #5C3A21;
+  font-weight: 700;
+}
+
+.paginacion-controles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pag-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 2px solid #E5D5B7;
+  background: #FFFFFF;
+  color: #5C3A21;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.pag-btn:hover:not(:disabled) {
+  background: #F26B7A;
+  color: #FFF8E7;
+  border-color: #F26B7A;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(242, 107, 122, 0.3);
+}
+
+.pag-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pag-numero {
+  font-size: 13px;
+  color: #5C3A21;
+  font-weight: 600;
+  padding: 8px 16px;
+  background: #FFFFFF;
+  border-radius: 10px;
+  border: 2px solid #F0EAD8;
+  white-space: nowrap;
+}
+
+.pag-numero strong {
+  color: #F26B7A;
+  font-weight: 800;
+}
+
+.paginacion-tamano {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #8B7A66;
+  font-weight: 600;
+}
+
+.paginacion-tamano select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 2px solid #E5D5B7;
+  background: #FFFFFF;
+  color: #5C3A21;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.paginacion-tamano select:hover {
+  border-color: #F26B7A;
+}
+
+.paginacion-tamano select:focus {
+  outline: none;
+  border-color: #F26B7A;
+  box-shadow: 0 0 0 3px rgba(242, 107, 122, 0.12);
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE PAGINACIÓN
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .paginacion {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 15px;
+  }
+
+  .paginacion-info {
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .paginacion-controles {
+    justify-content: center;
+  }
+
+  .paginacion-tamano {
+    justify-content: center;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   TABLA DE VENTAS - SCROLL VERTICAL
+   ═══════════════════════════════════════════ */
+.tabla-ventas-desktop .table-wrapper {
+  max-height: 550px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 2px solid #F0EAD8;
+}
+
+.tabla-ventas-desktop .table-wrapper::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.tabla-ventas-desktop .table-wrapper::-webkit-scrollbar-track {
+  background: #FFF8E7;
+  border-radius: 10px;
+}
+
+.tabla-ventas-desktop .table-wrapper::-webkit-scrollbar-thumb {
+  background: #E5D5B7;
+  border-radius: 10px;
+  transition: background 0.2s;
+}
+
+.tabla-ventas-desktop .table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #F26B7A;
+}
+
+.tabla-ventas-desktop .table-wrapper {
+  scrollbar-width: thin;
+  scrollbar-color: #E5D5B7 #FFF8E7;
+}
+
+.tabla-ventas-desktop .data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+.tabla-ventas-desktop .data-table thead th {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* ═══════════════════════════════════════════
+   PAGINACIÓN (PC)
+   ═══════════════════════════════════════════ */
+.paginacion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 20px;
+  background: #FFF8E7;
+  border-top: 2px solid #F0EAD8;
+  border-radius: 0 0 12px 12px;
+  flex-wrap: wrap;
+}
+
+.paginacion-info {
+  font-size: 13px;
+  color: #8B7A66;
+  font-weight: 500;
+}
+
+.paginacion-info strong {
+  color: #5C3A21;
+  font-weight: 700;
+}
+
+.paginacion-controles {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.pag-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  border: 2px solid #E5D5B7;
+  background: #FFFFFF;
+  color: #5C3A21;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.pag-btn:hover:not(:disabled) {
+  background: #F26B7A;
+  color: #FFF8E7;
+  border-color: #F26B7A;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(242, 107, 122, 0.3);
+}
+
+.pag-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.pag-numero {
+  font-size: 13px;
+  color: #5C3A21;
+  font-weight: 600;
+  padding: 8px 16px;
+  background: #FFFFFF;
+  border-radius: 10px;
+  border: 2px solid #F0EAD8;
+  white-space: nowrap;
+}
+
+.pag-numero strong {
+  color: #F26B7A;
+  font-weight: 800;
+}
+
+.paginacion-tamano {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #8B7A66;
+  font-weight: 600;
+}
+
+.paginacion-tamano select {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 2px solid #E5D5B7;
+  background: #FFFFFF;
+  color: #5C3A21;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.paginacion-tamano select:hover {
+  border-color: #F26B7A;
+}
+
+.paginacion-tamano select:focus {
+  outline: none;
+  border-color: #F26B7A;
+  box-shadow: 0 0 0 3px rgba(242, 107, 122, 0.12);
+}
+
+/* ═══════════════════════════════════════════
+   BOTÓN "VER MÁS" (MÓVIL)
+   ═══════════════════════════════════════════ */
+.btn-ver-mas-mobile {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #3DC5B8 0%, #2A9D8F 100%);
+  color: #FFF8E7;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  margin: 10px 0;
+  box-shadow: 0 4px 12px rgba(42, 157, 143, 0.25);
+}
+
+.btn-ver-mas-mobile:hover,
+.btn-ver-mas-mobile:active {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(42, 157, 143, 0.4);
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE PAGINACIÓN
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .paginacion {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 12px 15px;
+  }
+
+  .paginacion-info {
+    text-align: center;
+    font-size: 12px;
+  }
+
+  .paginacion-controles {
+    justify-content: center;
+  }
+
+  .paginacion-tamano {
+    justify-content: center;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   BUSCADOR DE VENTAS
+   ═══════════════════════════════════════════ */
+.buscador-ventas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFFFFF;
+  border: 2px solid #E5D5B7;
+  border-radius: 14px;
+  padding: 12px 16px;
+  margin-bottom: 15px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.buscador-ventas:focus-within {
+  border-color: #F26B7A;
+  box-shadow: 0 0 0 4px rgba(242, 107, 122, 0.12);
+}
+
+.buscador-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.buscador-ventas input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #5C3A21;
+  background: transparent;
+  padding: 0;
+}
+
+.buscador-ventas input::placeholder {
+  color: #8B7A66;
+  opacity: 0.7;
+}
+
+.buscador-limpiar {
+  background: #F26B7A;
+  color: #FFF8E7;
+  border: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.buscador-limpiar:hover {
+  background: #E55568;
+  transform: scale(1.1);
+}
+
+.buscador-resultados {
+  padding: 10px 16px;
+  background: #FFF8E7;
+  border-radius: 12px;
+  border-left: 4px solid #FFD93D;
+  font-size: 13px;
+  color: #5C3A21;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.buscador-resultados strong {
+  color: #F26B7A;
+  font-weight: 800;
+}
+
+@media (max-width: 768px) {
+  .buscador-ventas {
+    padding: 10px 14px;
+  }
+
+  .buscador-ventas input {
+    font-size: 13px;
+  }
+
+  .buscador-resultados {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   FILTROS DE VENTAS (Buscador + Lote)
+   ═══════════════════════════════════════════ */
+.filtros-ventas {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 12px;
+  margin-bottom: 15px;
+  align-items: stretch;
+}
+
+/* 🔍 Buscador */
+.buscador-ventas {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #FFFFFF;
+  border: 2px solid #E5D5B7;
+  border-radius: 14px;
+  padding: 0 16px;
+  height: 52px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-sizing: border-box;
+}
+
+.buscador-ventas:focus-within {
+  border-color: #F26B7A;
+  box-shadow: 0 0 0 4px rgba(242, 107, 122, 0.12);
+}
+
+.buscador-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.buscador-ventas input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #5C3A21;
+  background: transparent;
+  padding: 0;
+  min-width: 0;
+  height: 100%;
+}
+
+.buscador-ventas input::placeholder {
+  color: #8B7A66;
+  opacity: 0.7;
+}
+
+.buscador-limpiar {
+  background: #F26B7A;
+  color: #FFF8E7;
+  border: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.buscador-limpiar:hover {
+  background: #E55568;
+  transform: scale(1.1);
+}
+
+/* 🍚 Filtro por lote */
+/* ═══════════════════════════════════════════
+   FILTRO POR LOTE - Dropdown custom
+   ═══════════════════════════════════════════ */
+.filtro-lote-ventas {
+  position: relative;
+  background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
+  border: 2px solid #FFD93D;
+  border-radius: 14px;
+  height: 52px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(255, 217, 61, 0.15);
+  box-sizing: border-box;
+  display: flex;
+  align-items: stretch;
+}
+
+.filtro-lote-ventas:focus-within,
+.filtro-lote-ventas:has(.filtro-lote-menu) {
+  border-color: #F26B7A;
+  box-shadow: 0 0 0 4px rgba(242, 107, 122, 0.12);
+}
+
+.filtro-lote-trigger {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5C3A21;
+  text-align: left;
+  transition: all 0.2s ease;
+  border-radius: 12px;
+  min-width: 0;
+}
+
+.filtro-lote-trigger:hover {
+  background: rgba(255, 217, 61, 0.15);
+}
+
+.filtro-lote-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.filtro-lote-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.filtro-lote-arrow {
+  font-size: 10px;
+  color: #8B7A66;
+  transition: transform 0.25s ease;
+  flex-shrink: 0;
+}
+
+.filtro-lote-arrow.abierto {
+  transform: rotate(180deg);
+}
+
+/* Menú desplegable */
+.filtro-lote-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 100%;
+  width: max-content;
+  max-width: 360px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: #FFFFFF;
+  border: 2px solid #FFD93D;
+  border-radius: 14px;
+  box-shadow: 0 12px 35px rgba(92, 58, 33, 0.18);
+  padding: 6px;
+  z-index: 100;
+  animation: dropdownEntrada 0.2s ease;
+}
+
+@keyframes dropdownEntrada {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.filtro-lote-menu::-webkit-scrollbar {
+  width: 8px;
+}
+
+.filtro-lote-menu::-webkit-scrollbar-track {
+  background: #FFF8E7;
+  border-radius: 8px;
+  margin: 6px 0;
+}
+
+.filtro-lote-menu::-webkit-scrollbar-thumb {
+  background: #E5D5B7;
+  border-radius: 8px;
+}
+
+.filtro-lote-menu::-webkit-scrollbar-thumb:hover {
+  background: #F26B7A;
+}
+
+.filtro-lote-menu {
+  scrollbar-width: thin;
+  scrollbar-color: #E5D5B7 #FFF8E7;
+}
+
+.filtro-lote-opcion {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5C3A21;
+  text-align: left;
+  transition: all 0.15s ease;
+  margin-bottom: 2px;
+}
+
+.filtro-lote-opcion:last-child {
+  margin-bottom: 0;
+}
+
+.filtro-lote-opcion:hover {
+  background: #FFF8E7;
+}
+
+.filtro-lote-opcion.activa {
+  background: linear-gradient(135deg, #FFF0D4, #FFE5B8);
+  color: #5C3A21;
+  font-weight: 800;
+}
+
+.filtro-lote-opcion.activa:hover {
+  background: linear-gradient(135deg, #FFE5B8, #FFD93D);
+}
+
+.opcion-icon {
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.opcion-texto {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+.opcion-cantidad {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  background: #F5F0E6;
+  color: #8B7A66;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.filtro-lote-opcion.activa .opcion-cantidad {
+  background: #F26B7A;
+  color: #FFF8E7;
+}
+
+.opcion-check {
+  font-size: 14px;
+  font-weight: 800;
+  color: #2A9D8F;
+  flex-shrink: 0;
+  margin-left: 4px;
+}
+
+@media (max-width: 768px) {
+  .filtro-lote-ventas {
+    height: 48px;
+  }
+
+  .filtro-lote-trigger {
+    font-size: 12px;
+    padding: 0 12px;
+  }
+
+  .filtro-lote-menu {
+    max-width: calc(100vw - 30px);
+  }
+
+  .filtro-lote-opcion {
+    font-size: 12px;
+    padding: 9px 10px;
+  }
+}
+
+.filtro-lote-limpiar {
+  background: #F26B7A;
+  color: #FFF8E7;
+  border: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.filtro-lote-limpiar:hover {
+  background: #E55568;
+  transform: scale(1.1);
+}
+
+/* Contador de resultados */
+.buscador-resultados {
+  padding: 10px 16px;
+  background: #FFF8E7;
+  border-radius: 12px;
+  border-left: 4px solid #FFD93D;
+  font-size: 13px;
+  color: #5C3A21;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.buscador-resultados strong {
+  color: #F26B7A;
+  font-weight: 800;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .filtros-ventas {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .buscador-ventas {
+    padding: 0 14px;
+    height: 48px;
+  }
+
+  .buscador-ventas input {
+    font-size: 13px;
+  }
+
+  .filtro-lote-ventas {
+    padding: 0 12px;
+    height: 48px;
+  }
+
+  .filtro-lote-ventas select {
+    font-size: 12px;
+  }
+
+  .buscador-resultados {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}
+
+.buscador-resultados strong {
+  color: #F26B7A;
+  font-weight: 800;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+  .filtros-ventas {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .buscador-ventas {
+    padding: 10px 14px;
+  }
+
+  .buscador-ventas input {
+    font-size: 13px;
+  }
+
+  .filtro-lote-ventas {
+    padding: 10px 12px;
+  }
+
+  .filtro-lote-ventas select {
+    font-size: 12px;
+  }
+
+  .buscador-resultados {
+    font-size: 12px;
+    padding: 8px 12px;
+  }
+}

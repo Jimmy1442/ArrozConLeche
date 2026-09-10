@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import {
   collection,
   addDoc,
@@ -41,6 +41,23 @@ function Ventas({ usuario, onAbrirSidebar }) {
   const [editando, setEditando] = useState(null);
   const [guardandoEdit, setGuardandoEdit] = useState(false);
 
+  // 📄 Paginación (PC)
+  const [paginaActual, setPaginaActual] = useState(1);
+  const [porPagina, setPorPagina] = useState(10);
+
+  // 📱 Botón "Ver más" (móvil)
+  const [mostrarEnMobile, setMostrarEnMobile] = useState(20);
+
+  // 🔍 Buscador
+  const [busqueda, setBusqueda] = useState('');
+
+  // 🍚 Filtro por lote
+  const [filtroLote, setFiltroLote] = useState('todos');
+
+  // 🍚 Dropdown custom
+  const [dropdownAbierto, setDropdownAbierto] = useState(false);
+  const dropdownRef = useRef(null);
+
   // 🔥 Cargar ventas, clientes y lotes en tiempo real
   useEffect(() => {
     const qVentas = query(collection(db, 'ventas'), orderBy('fecha', 'desc'));
@@ -74,6 +91,76 @@ function Ventas({ usuario, onAbrirSidebar }) {
     };
   }, []);
 
+  // 🔒 Cerrar dropdown al hacer clic fuera o presionar Escape
+  useEffect(() => {
+    const handleClickFuera = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setDropdownAbierto(false);
+      }
+    };
+
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setDropdownAbierto(false);
+    };
+
+    document.addEventListener('mousedown', handleClickFuera);
+    document.addEventListener('keydown', handleEsc);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickFuera);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
+
+  // 📅 Formatear fecha sin problema de timezone
+  const formatearFecha = (fecha) => {
+    if (!fecha) return '...';
+
+    if (fecha.toDate) {
+      return fecha.toDate().toLocaleDateString('es-CO');
+    }
+
+    if (typeof fecha === 'string') {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+        const [yyyy, mm, dd] = fecha.split('-');
+        return `${dd}/${mm}/${yyyy}`;
+      }
+      if (fecha.includes('T')) {
+        const [datePart] = fecha.split('T');
+        const [yyyy, mm, dd] = datePart.split('-');
+        return `${dd}/${mm}/${yyyy}`;
+      }
+    }
+
+    return new Date(fecha).toLocaleDateString('es-CO');
+  };
+
+  // 🔍 Filtrar ventas según búsqueda + lote
+  const ventasFiltradas = ventas.filter((v) => {
+    // 1. Filtro por lote
+    if (filtroLote !== 'todos') {
+      if (filtroLote === 'sin-lote') {
+        if (v.loteId) return false;
+      } else if (v.loteId !== filtroLote) {
+        return false;
+      }
+    }
+
+    // 2. Filtro por búsqueda
+    if (!busqueda.trim()) return true;
+
+    const busq = busqueda.toLowerCase().trim();
+    const fechaFormateada = formatearFecha(v.fecha).toLowerCase();
+
+    return (
+      (v.clienteNombre || '').toLowerCase().includes(busq) ||
+      (v.clienteTelefono || '').toLowerCase().includes(busq) ||
+      (v.loteNombre || '').toLowerCase().includes(busq) ||
+      fechaFormateada.includes(busq) ||
+      String(v.cantidad || '').includes(busq)
+    );
+  });
+
   // 🧮 Cálculos del formulario
   const cantidadNum = Number(nuevo.cantidad) || 0;
   const valorNum    = Number(nuevo.valorUnitario) || 0;
@@ -90,6 +177,30 @@ function Ventas({ usuario, onAbrirSidebar }) {
   const totalEditando  = editCantidad * editValor;
   const pagadoEditando = editAbono;
   const saldoEditando  = totalEditando - pagadoEditando;
+
+  // 📄 Cálculos de paginación (PC) — sobre ventas filtradas
+  const totalPaginas = Math.ceil(ventasFiltradas.length / porPagina);
+  const inicio = (paginaActual - 1) * porPagina;
+  const fin = inicio + porPagina;
+  const ventasPaginadas = ventasFiltradas.slice(inicio, fin);
+
+  // Resetear página si cambia el tamaño o la cantidad
+  useEffect(() => {
+    if (paginaActual > totalPaginas && totalPaginas > 0) {
+      setPaginaActual(1);
+    }
+  }, [porPagina, ventasFiltradas.length, totalPaginas, paginaActual]);
+
+  // Resetear filtros cuando cambie la búsqueda o el lote
+  useEffect(() => {
+    setPaginaActual(1);
+    setMostrarEnMobile(20);
+  }, [busqueda, filtroLote]);
+
+  const irPagina = (n) => {
+    if (n < 1 || n > totalPaginas) return;
+    setPaginaActual(n);
+  };
 
   // ➕ Agregar venta
   const agregar = async () => {
@@ -217,17 +328,24 @@ function Ventas({ usuario, onAbrirSidebar }) {
   };
 
   const toggleTodos = () => {
-    if (seleccionados.length === ventas.length) setSeleccionados([]);
-    else setSeleccionados(ventas.map((v) => v.id));
+    if (seleccionados.length === ventasPaginadas.length) {
+      setSeleccionados((prev) =>
+        prev.filter((id) => !ventasPaginadas.some((v) => v.id === id))
+      );
+    } else {
+      const idsPagina = ventasPaginadas.map((v) => v.id);
+      setSeleccionados((prev) => [...new Set([...prev, ...idsPagina])]);
+    }
   };
 
   const todosSeleccionados =
-    ventas.length > 0 && seleccionados.length === ventas.length;
+    ventasPaginadas.length > 0 &&
+    ventasPaginadas.every((v) => seleccionados.includes(v.id));
 
-  // 💰 Totales
-  const totalVendido = ventas.reduce((s, v) => s + (v.total || 0), 0);
-  const totalPagado  = ventas.reduce((s, v) => s + (v.pagado || 0), 0);
-  const totalSaldo   = ventas.reduce((s, v) => s + (v.saldo || 0), 0);
+  // 💰 Totales (sobre ventas filtradas para reflejar la búsqueda)
+  const totalVendido = ventasFiltradas.reduce((s, v) => s + (v.total || 0), 0);
+  const totalPagado  = ventasFiltradas.reduce((s, v) => s + (v.pagado || 0), 0);
+  const totalSaldo   = ventasFiltradas.reduce((s, v) => s + (v.saldo || 0), 0);
 
   const totalSelVendido = ventas
     .filter((v) => seleccionados.includes(v.id))
@@ -236,35 +354,19 @@ function Ventas({ usuario, onAbrirSidebar }) {
     .filter((v) => seleccionados.includes(v.id))
     .reduce((s, v) => s + (v.saldo || 0), 0);
 
-  const formatearFecha = (fecha) => {
-    if (!fecha) return '...';
-
-    // Timestamp de Firestore
-    if (fecha.toDate) {
-      return fecha.toDate().toLocaleDateString('es-CO');
-    }
-
-    // String "YYYY-MM-DD" → formatear sin timezone
-    if (typeof fecha === 'string') {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-        const [yyyy, mm, dd] = fecha.split('-');
-        return `${dd}/${mm}/${yyyy}`;
-      }
-      if (fecha.includes('T')) {
-        const [datePart] = fecha.split('T');
-        const [yyyy, mm, dd] = datePart.split('-');
-        return `${dd}/${mm}/${yyyy}`;
-      }
-    }
-
-    return new Date(fecha).toLocaleDateString('es-CO');
-  };
-
   const colorEntrega = (e) =>
     e === 'Entregado' ? 'badge-verde' : 'badge-amarillo';
 
   const colorEstado = (e) =>
     e === 'Pagado' ? 'badge-verde' : 'badge-amarillo';
+
+  // Helper para obtener el nombre del lote seleccionado
+  const nombreLoteFiltro =
+    filtroLote === 'sin-lote'
+      ? 'Sin lote'
+      : filtroLote === 'todos'
+      ? null
+      : lotes.find((l) => l.id === filtroLote)?.nombre || '';
 
   return (
     <div className="modulo-layout">
@@ -309,6 +411,153 @@ function Ventas({ usuario, onAbrirSidebar }) {
               </Button>
             </div>
           </div>
+
+          {/* 🔍 BUSCADOR Y FILTROS (solo si NO está creando) */}
+          {!mostrarForm && (
+            <>
+              <div className="filtros-ventas">
+                {/* Buscador */}
+                <div className="buscador-ventas">
+                  <span className="buscador-icon">🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Buscar por cliente, teléfono, fecha..."
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                  />
+                  {busqueda && (
+                    <button
+                      className="buscador-limpiar"
+                      onClick={() => setBusqueda('')}
+                      title="Limpiar búsqueda"
+                    >
+                      ✖
+                    </button>
+                  )}
+                </div>
+
+                {/* Filtro por lote - Dropdown custom */}
+                <div className="filtro-lote-ventas" ref={dropdownRef}>
+                  <button
+                    type="button"
+                    className="filtro-lote-trigger"
+                    onClick={() => setDropdownAbierto(!dropdownAbierto)}
+                  >
+                    <span className="filtro-lote-icon">🍚</span>
+                    <span className="filtro-lote-label">
+                      {filtroLote === 'todos' && (
+                        <>📚 Todos los lotes ({ventas.length})</>
+                      )}
+                      {filtroLote === 'sin-lote' && (
+                        <>⚠️ Sin lote ({ventas.filter((v) => !v.loteId).length})</>
+                      )}
+                      {filtroLote !== 'todos' && filtroLote !== 'sin-lote' && (
+                        <>
+                          🍚 {lotes.find((l) => l.id === filtroLote)?.nombre} (
+                          {ventas.filter((v) => v.loteId === filtroLote).length})
+                        </>
+                      )}
+                    </span>
+                    <span className={`filtro-lote-arrow ${dropdownAbierto ? 'abierto' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
+
+                  {dropdownAbierto && (
+                    <div className="filtro-lote-menu">
+                      <button
+                        type="button"
+                        className={`filtro-lote-opcion ${
+                          filtroLote === 'todos' ? 'activa' : ''
+                        }`}
+                        onClick={() => {
+                          setFiltroLote('todos');
+                          setDropdownAbierto(false);
+                        }}
+                      >
+                        <span className="opcion-icon">📚</span>
+                        <span className="opcion-texto">Todos los lotes</span>
+                        <span className="opcion-cantidad">{ventas.length}</span>
+                        {filtroLote === 'todos' && <span className="opcion-check">✓</span>}
+                      </button>
+
+                      <button
+                        type="button"
+                        className={`filtro-lote-opcion ${
+                          filtroLote === 'sin-lote' ? 'activa' : ''
+                        }`}
+                        onClick={() => {
+                          setFiltroLote('sin-lote');
+                          setDropdownAbierto(false);
+                        }}
+                      >
+                        <span className="opcion-icon">⚠️</span>
+                        <span className="opcion-texto">Sin lote</span>
+                        <span className="opcion-cantidad">
+                          {ventas.filter((v) => !v.loteId).length}
+                        </span>
+                        {filtroLote === 'sin-lote' && <span className="opcion-check">✓</span>}
+                      </button>
+
+                      {lotes.map((l) => {
+                        const cantidad = ventas.filter((v) => v.loteId === l.id).length;
+                        return (
+                          <button
+                            key={l.id}
+                            type="button"
+                            className={`filtro-lote-opcion ${
+                              filtroLote === l.id ? 'activa' : ''
+                            }`}
+                            onClick={() => {
+                              setFiltroLote(l.id);
+                              setDropdownAbierto(false);
+                            }}
+                          >
+                            <span className="opcion-icon">🍚</span>
+                            <span className="opcion-texto">{l.nombre}</span>
+                            <span className="opcion-cantidad">{cantidad}</span>
+                            {filtroLote === l.id && <span className="opcion-check">✓</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Contador de resultados */}
+              {(busqueda || filtroLote !== 'todos') && (
+                <div className="buscador-resultados">
+                  {ventasFiltradas.length === 0 ? (
+                    <span style={{ color: '#F26B7A' }}>
+                      ❌ No se encontraron ventas
+                      {busqueda && <> para "<strong>{busqueda}</strong>"</>}
+                      {filtroLote !== 'todos' && (
+                        <>
+                          {' '}en el lote <strong>{nombreLoteFiltro}</strong>
+                        </>
+                      )}
+                    </span>
+                  ) : (
+                    <span>
+                      ✅ Mostrando <strong>{ventasFiltradas.length}</strong> de{' '}
+                      <strong>{ventas.length}</strong> ventas
+                      {filtroLote !== 'todos' && (
+                        <>
+                          {' '}· Lote: <strong>{nombreLoteFiltro}</strong>
+                        </>
+                      )}
+                      {busqueda && (
+                        <>
+                          {' '}· Búsqueda: <strong>"{busqueda}"</strong>
+                        </>
+                      )}
+                    </span>
+                  )}
+                </div>
+              )}
+            </>
+          )}
 
           {error && <div className="error-msg">{error}</div>}
 
@@ -467,314 +716,410 @@ function Ventas({ usuario, onAbrirSidebar }) {
           )}
 
           {/* 📋 TABLA (desktop/tablet) + CARDS (móvil) */}
-          <div className="dashboard-panel">
-            {/* Vista de tabla (PC/Tablet) */}
-            <div className="tabla-ventas-desktop">
-              <div className="table-wrapper">
-                <table className="data-table">
-                  <thead>
-                    <tr>
-                      <th style={{ width: '40px' }}>
+          {!mostrarForm && (
+            <div className="dashboard-panel">
+              {/* Vista de tabla (PC/Tablet) */}
+              <div className="tabla-ventas-desktop">
+                <div className="table-wrapper">
+                  <table className="data-table">
+                    <thead>
+                      <tr>
+                        <th style={{ width: '40px' }}>
+                          <input
+                            type="checkbox"
+                            checked={todosSeleccionados}
+                            onChange={toggleTodos}
+                          />
+                        </th>
+                        <th>Cliente</th>
+                        <th>Cant.</th>
+                        <th>Total</th>
+                        <th>Abonado</th>
+                        <th>Saldo</th>
+                        <th>Lote</th>
+                        <th>Entrega</th>
+                        <th>Estado</th>
+                        <th>Fecha</th>
+                        <th style={{ width: '100px' }}>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {cargando ? (
+                        <tr>
+                          <td colSpan="11" style={{ textAlign: 'center', padding: '30px' }}>
+                            Cargando ventas... 🍚
+                          </td>
+                        </tr>
+                      ) : ventasFiltradas.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan="11"
+                            style={{ textAlign: 'center', padding: '40px', color: '#8B7A66' }}
+                          >
+                            {busqueda || filtroLote !== 'todos' ? (
+                              <>
+                                🔍 No se encontraron ventas
+                                {busqueda && <> para "<strong>{busqueda}</strong>"</>}
+                                {filtroLote !== 'todos' && (
+                                  <>
+                                    {' '}en el lote <strong>{nombreLoteFiltro}</strong>
+                                  </>
+                                )}
+                                <br />
+                                <small>Prueba con otro filtro o término de búsqueda</small>
+                              </>
+                            ) : (
+                              <>
+                                💰 Aún no hay ventas registradas
+                                <br />
+                                <small>Haz clic en "➕ Nueva venta" para empezar</small>
+                              </>
+                            )}
+                          </td>
+                        </tr>
+                      ) : (
+                        ventasPaginadas.map((v) => {
+                          const activo = seleccionados.includes(v.id);
+                          return (
+                            <tr key={v.id} className={activo ? 'fila-seleccionada' : ''}>
+                              <td>
+                                <input
+                                  type="checkbox"
+                                  checked={activo}
+                                  onChange={() => toggleSeleccion(v.id)}
+                                />
+                              </td>
+                              <td>
+                                <strong>{v.clienteNombre}</strong>
+                                <br />
+                                <small style={{ color: '#8B7A66' }}>
+                                  {v.clienteTelefono}
+                                </small>
+                              </td>
+                              <td>{v.cantidad}</td>
+                              <td>${v.total?.toLocaleString('es-CO')}</td>
+                              <td>
+                                <strong style={{ color: '#2A9D8F' }}>
+                                  ${v.pagado?.toLocaleString('es-CO')}
+                                </strong>
+                              </td>
+                              <td>
+                                <strong style={{ color: v.saldo > 0 ? '#F26B7A' : '#8B7A66' }}>
+                                  ${v.saldo?.toLocaleString('es-CO')}
+                                </strong>
+                              </td>
+                              <td>
+                                {v.loteNombre ? (
+                                  <span className="badge badge-verde">
+                                    🍚 {v.loteNombre}
+                                  </span>
+                                ) : (
+                                  <span style={{ color: '#8B7A66', fontSize: 12 }}>
+                                    —
+                                  </span>
+                                )}
+                              </td>
+                              <td>
+                                <span className={`badge ${colorEntrega(v.entrega)}`}>
+                                  {v.entrega}
+                                </span>
+                              </td>
+                              <td>
+                                <span className={`badge ${colorEstado(v.estado)}`}>
+                                  {v.estado}
+                                </span>
+                              </td>
+                              <td>{formatearFecha(v.fecha)}</td>
+                              <td>
+                                <div style={{ display: 'flex', gap: '6px' }}>
+                                  <button
+                                    className="btn-icon"
+                                    title="Editar"
+                                    onClick={() =>
+                                      setEditando({
+                                        ...v,
+                                        cantidad: v.cantidad ?? '',
+                                        valorUnitario: v.valorUnitario ?? '',
+                                        abono: v.abono ?? v.pagado ?? 0,
+                                        loteId: v.loteId || ''
+                                      })
+                                    }
+                                  >
+                                    ✏️
+                                  </button>
+                                  <button
+                                    className="btn-icon"
+                                    title="Eliminar"
+                                    onClick={() => eliminar(v.id)}
+                                  >
+                                    🗑
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+
+                    {ventasFiltradas.length > 0 && (
+                      <tfoot>
+                        <tr>
+                          <td colSpan="3" style={{ textAlign: 'right', fontWeight: '600' }}>
+                            Totales:
+                          </td>
+                          <td>
+                            <strong style={{ color: '#5C3A21' }}>
+                              ${totalVendido.toLocaleString('es-CO')}
+                            </strong>
+                          </td>
+                          <td>
+                            <strong style={{ color: '#2A9D8F' }}>
+                              ${totalPagado.toLocaleString('es-CO')}
+                            </strong>
+                          </td>
+                          <td>
+                            <strong style={{ color: '#F26B7A' }}>
+                              ${totalSaldo.toLocaleString('es-CO')}
+                            </strong>
+                          </td>
+                          <td colSpan="5"></td>
+                        </tr>
+                      </tfoot>
+                    )}
+                  </table>
+                </div>
+
+                {/* 📄 PAGINACIÓN (PC) */}
+                {ventasFiltradas.length > 0 && (
+                  <div className="paginacion">
+                    <div className="paginacion-info">
+                      Mostrando <strong>{inicio + 1}</strong>-
+                      <strong>{Math.min(fin, ventasFiltradas.length)}</strong> de{' '}
+                      <strong>{ventasFiltradas.length}</strong> ventas
+                    </div>
+
+                    <div className="paginacion-controles">
+                      <button
+                        className="pag-btn"
+                        onClick={() => irPagina(paginaActual - 1)}
+                        disabled={paginaActual === 1}
+                        title="Anterior"
+                      >
+                        ◀️
+                      </button>
+
+                      <span className="pag-numero">
+                        Página <strong>{paginaActual}</strong> de{' '}
+                        <strong>{totalPaginas}</strong>
+                      </span>
+
+                      <button
+                        className="pag-btn"
+                        onClick={() => irPagina(paginaActual + 1)}
+                        disabled={paginaActual === totalPaginas}
+                        title="Siguiente"
+                      >
+                        ▶️
+                      </button>
+                    </div>
+
+                    <div className="paginacion-tamano">
+                      <label>Mostrar:</label>
+                      <select
+                        value={porPagina}
+                        onChange={(e) => {
+                          setPorPagina(Number(e.target.value));
+                          setPaginaActual(1);
+                        }}
+                      >
+                        <option value={10}>10</option>
+                        <option value={25}>25</option>
+                        <option value={50}>50</option>
+                        <option value={100}>100</option>
+                      </select>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Vista de cards (móvil) */}
+              <div className="cards-ventas-mobile">
+                {cargando ? (
+                  <p className="panel-vacio">Cargando ventas... 🍚</p>
+                ) : ventasFiltradas.length === 0 ? (
+                  <p className="panel-vacio">
+                    {busqueda || filtroLote !== 'todos' ? (
+                      <>
+                        🔍 No se encontraron ventas
+                        {busqueda && <> para "<strong>{busqueda}</strong>"</>}
+                        {filtroLote !== 'todos' && (
+                          <>
+                            {' '}en el lote <strong>{nombreLoteFiltro}</strong>
+                          </>
+                        )}
+                        <br />
+                        <small>Prueba con otro filtro o término de búsqueda</small>
+                      </>
+                    ) : (
+                      <>
+                        💰 Aún no hay ventas registradas
+                        <br />
+                        <small>Haz clic en "➕ Nueva venta" para empezar</small>
+                      </>
+                    )}
+                  </p>
+                ) : (
+                  <>
+                    {ventasFiltradas.length > 1 && (
+                      <label className="card-selector-todos">
                         <input
                           type="checkbox"
                           checked={todosSeleccionados}
                           onChange={toggleTodos}
                         />
-                      </th>
-                      <th>Cliente</th>
-                      <th>Cant.</th>
-                      <th>Total</th>
-                      <th>Abonado</th>
-                      <th>Saldo</th>
-                      <th>Lote</th>
-                      <th>Entrega</th>
-                      <th>Estado</th>
-                      <th>Fecha</th>
-                      <th style={{ width: '100px' }}>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {cargando ? (
-                      <tr>
-                        <td colSpan="11" style={{ textAlign: 'center', padding: '30px' }}>
-                          Cargando ventas... 🍚
-                        </td>
-                      </tr>
-                    ) : ventas.length === 0 ? (
-                      <tr>
-                        <td
-                          colSpan="11"
-                          style={{ textAlign: 'center', padding: '40px', color: '#8B7A66' }}
+                        <span>Seleccionar todos ({ventasFiltradas.length})</span>
+                      </label>
+                    )}
+
+                    {ventasFiltradas.slice(0, mostrarEnMobile).map((v) => {
+                      const activo = seleccionados.includes(v.id);
+                      const esPagado = v.estado === 'Pagado';
+                      const esEntregado = v.entrega === 'Entregado';
+
+                      return (
+                        <div
+                          key={v.id}
+                          className={`venta-card ${activo ? 'venta-card-activa' : ''}`}
                         >
-                          💰 Aún no hay ventas registradas
-                          <br />
-                          <small>Haz clic en "➕ Nueva venta" para empezar</small>
-                        </td>
-                      </tr>
-                    ) : (
-                      ventas.map((v) => {
-                        const activo = seleccionados.includes(v.id);
-                        return (
-                          <tr key={v.id} className={activo ? 'fila-seleccionada' : ''}>
-                            <td>
+                          <div
+                            className={`venta-card-barra ${
+                              esPagado ? 'barra-verde' : 'barra-amarilla'
+                            }`}
+                          />
+
+                          <div className="venta-card-header">
+                            <label className="venta-card-check">
                               <input
                                 type="checkbox"
                                 checked={activo}
                                 onChange={() => toggleSeleccion(v.id)}
                               />
-                            </td>
-                            <td>
+                            </label>
+                            <div className="venta-card-cliente">
                               <strong>{v.clienteNombre}</strong>
-                              <br />
-                              <small style={{ color: '#8B7A66' }}>
-                                {v.clienteTelefono}
-                              </small>
-                            </td>
-                            <td>{v.cantidad}</td>
-                            <td>${v.total?.toLocaleString('es-CO')}</td>
-                            <td>
+                              <small>📞 {v.clienteTelefono || 'Sin teléfono'}</small>
+                            </div>
+                            <div className="venta-card-fecha">
+                              <span>{formatearFecha(v.fecha)}</span>
+                            </div>
+                          </div>
+
+                          <div className="venta-card-total-destacado">
+                            <span className="total-label">💰 Total</span>
+                            <strong className="total-valor">
+                              ${v.total?.toLocaleString('es-CO')}
+                            </strong>
+                          </div>
+
+                          <div className="venta-card-info">
+                            <div className="info-item">
+                              <span className="info-label">📦 Cantidad</span>
+                              <strong>{v.cantidad}</strong>
+                            </div>
+                            <div className="info-item">
+                              <span className="info-label">✅ Abonado</span>
                               <strong style={{ color: '#2A9D8F' }}>
                                 ${v.pagado?.toLocaleString('es-CO')}
                               </strong>
-                            </td>
-                            <td>
-                              <strong style={{ color: v.saldo > 0 ? '#F26B7A' : '#8B7A66' }}>
+                            </div>
+                            <div className="info-item info-item-full">
+                              <span className="info-label">⏳ Saldo pendiente</span>
+                              <strong
+                                style={{
+                                  color: v.saldo > 0 ? '#F26B7A' : '#8B7A66',
+                                  fontSize: v.saldo > 0 ? '18px' : '15px'
+                                }}
+                              >
                                 ${v.saldo?.toLocaleString('es-CO')}
                               </strong>
-                            </td>
-                            <td>
-                              {v.loteNombre ? (
-                                <span className="badge badge-verde">
-                                  🍚 {v.loteNombre}
-                                </span>
-                              ) : (
-                                <span style={{ color: '#8B7A66', fontSize: 12 }}>
-                                  —
-                                </span>
-                              )}
-                            </td>
-                            <td>
-                              <span className={`badge ${colorEntrega(v.entrega)}`}>
-                                {v.entrega}
-                              </span>
-                            </td>
-                            <td>
-                              <span className={`badge ${colorEstado(v.estado)}`}>
-                                {v.estado}
-                              </span>
-                            </td>
-                            <td>{formatearFecha(v.fecha)}</td>
-                            <td>
-                              <div style={{ display: 'flex', gap: '6px' }}>
-                                <button
-                                  className="btn-icon"
-                                  title="Editar"
-                                  onClick={() =>
-                                    setEditando({
-                                      ...v,
-                                      cantidad: v.cantidad ?? '',
-                                      valorUnitario: v.valorUnitario ?? '',
-                                      abono: v.abono ?? v.pagado ?? 0,
-                                      loteId: v.loteId || ''
-                                    })
-                                  }
-                                >
-                                  ✏️
-                                </button>
-                                <button
-                                  className="btn-icon"
-                                  title="Eliminar"
-                                  onClick={() => eliminar(v.id)}
-                                >
-                                  🗑
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
+                            </div>
+                          </div>
 
-                  {ventas.length > 0 && (
-                    <tfoot>
-                      <tr>
-                        <td colSpan="3" style={{ textAlign: 'right', fontWeight: '600' }}>
-                          Totales:
-                        </td>
-                        <td>
-                          <strong style={{ color: '#5C3A21' }}>
-                            ${totalVendido.toLocaleString('es-CO')}
-                          </strong>
-                        </td>
-                        <td>
-                          <strong style={{ color: '#2A9D8F' }}>
-                            ${totalPagado.toLocaleString('es-CO')}
-                          </strong>
-                        </td>
-                        <td>
-                          <strong style={{ color: '#F26B7A' }}>
-                            ${totalSaldo.toLocaleString('es-CO')}
-                          </strong>
-                        </td>
-                        <td colSpan="5"></td>
-                      </tr>
-                    </tfoot>
-                  )}
-                </table>
+                          <div className="venta-card-badges">
+                            {v.loteNombre && (
+                              <span className="badge badge-verde">🍚 {v.loteNombre}</span>
+                            )}
+                            <span className={`badge ${colorEntrega(v.entrega)}`}>
+                              {esEntregado ? '✅' : '🚚'} {v.entrega}
+                            </span>
+                            <span className={`badge ${colorEstado(v.estado)}`}>
+                              {esPagado ? '💰' : '⏳'} {v.estado}
+                            </span>
+                          </div>
+
+                          <div className="venta-card-acciones">
+                            <button
+                              className="btn-accion-card btn-editar"
+                              onClick={() =>
+                                setEditando({
+                                  ...v,
+                                  cantidad: v.cantidad ?? '',
+                                  valorUnitario: v.valorUnitario ?? '',
+                                  abono: v.abono ?? v.pagado ?? 0,
+                                  loteId: v.loteId || ''
+                                })
+                              }
+                            >
+                              ✏️ Editar
+                            </button>
+                            <button
+                              className="btn-accion-card btn-eliminar"
+                              onClick={() => eliminar(v.id)}
+                            >
+                              🗑 Eliminar
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+
+                    {/* 📱 Botón "Ver más" en móvil */}
+                    {ventasFiltradas.length > mostrarEnMobile && (
+                      <button
+                        className="btn-ver-mas-mobile"
+                        onClick={() => setMostrarEnMobile(mostrarEnMobile + 20)}
+                      >
+                        ⬇️ Ver más ventas ({ventasFiltradas.length - mostrarEnMobile} restantes)
+                      </button>
+                    )}
+
+                    <div className="ventas-totales-mobile">
+                      <h4 className="totales-titulo">📊 Resumen general</h4>
+                      <div className="total-row">
+                        <span>💰 Total vendido</span>
+                        <strong style={{ color: '#5C3A21' }}>
+                          ${totalVendido.toLocaleString('es-CO')}
+                        </strong>
+                      </div>
+                      <div className="total-row">
+                        <span>✅ Total abonado</span>
+                        <strong style={{ color: '#2A9D8F' }}>
+                          ${totalPagado.toLocaleString('es-CO')}
+                        </strong>
+                      </div>
+                      <div className="total-row total-row-destacado">
+                        <span>⏳ Saldo por cobrar</span>
+                        <strong style={{ color: '#F26B7A' }}>
+                          ${totalSaldo.toLocaleString('es-CO')}
+                        </strong>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
-
-            {/* Vista de cards (móvil) */}
-            <div className="cards-ventas-mobile">
-              {cargando ? (
-                <p className="panel-vacio">Cargando ventas... 🍚</p>
-              ) : ventas.length === 0 ? (
-                <p className="panel-vacio">
-                  💰 Aún no hay ventas registradas
-                  <br />
-                  <small>Haz clic en "➕ Nueva venta" para empezar</small>
-                </p>
-              ) : (
-                <>
-                  {ventas.length > 1 && (
-                    <label className="card-selector-todos">
-                      <input
-                        type="checkbox"
-                        checked={todosSeleccionados}
-                        onChange={toggleTodos}
-                      />
-                      <span>Seleccionar todos ({ventas.length})</span>
-                    </label>
-                  )}
-
-                  {ventas.map((v) => {
-                    const activo = seleccionados.includes(v.id);
-                    const esPagado = v.estado === 'Pagado';
-                    const esEntregado = v.entrega === 'Entregado';
-
-                    return (
-                      <div
-                        key={v.id}
-                        className={`venta-card ${activo ? 'venta-card-activa' : ''}`}
-                      >
-                        <div
-                          className={`venta-card-barra ${
-                            esPagado ? 'barra-verde' : 'barra-amarilla'
-                          }`}
-                        />
-
-                        <div className="venta-card-header">
-                          <label className="venta-card-check">
-                            <input
-                              type="checkbox"
-                              checked={activo}
-                              onChange={() => toggleSeleccion(v.id)}
-                            />
-                          </label>
-                          <div className="venta-card-cliente">
-                            <strong>{v.clienteNombre}</strong>
-                            <small>📞 {v.clienteTelefono || 'Sin teléfono'}</small>
-                          </div>
-                          <div className="venta-card-fecha">
-                            <span>{formatearFecha(v.fecha)}</span>
-                          </div>
-                        </div>
-
-                        <div className="venta-card-total-destacado">
-                          <span className="total-label">💰 Total</span>
-                          <strong className="total-valor">
-                            ${v.total?.toLocaleString('es-CO')}
-                          </strong>
-                        </div>
-
-                        <div className="venta-card-info">
-                          <div className="info-item">
-                            <span className="info-label">📦 Cantidad</span>
-                            <strong>{v.cantidad}</strong>
-                          </div>
-                          <div className="info-item">
-                            <span className="info-label">✅ Abonado</span>
-                            <strong style={{ color: '#2A9D8F' }}>
-                              ${v.pagado?.toLocaleString('es-CO')}
-                            </strong>
-                          </div>
-                          <div className="info-item info-item-full">
-                            <span className="info-label">⏳ Saldo pendiente</span>
-                            <strong
-                              style={{
-                                color: v.saldo > 0 ? '#F26B7A' : '#8B7A66',
-                                fontSize: v.saldo > 0 ? '18px' : '15px'
-                              }}
-                            >
-                              ${v.saldo?.toLocaleString('es-CO')}
-                            </strong>
-                          </div>
-                        </div>
-
-                        <div className="venta-card-badges">
-                          {v.loteNombre && (
-                            <span className="badge badge-verde">🍚 {v.loteNombre}</span>
-                          )}
-                          <span className={`badge ${colorEntrega(v.entrega)}`}>
-                            {esEntregado ? '✅' : '🚚'} {v.entrega}
-                          </span>
-                          <span className={`badge ${colorEstado(v.estado)}`}>
-                            {esPagado ? '💰' : '⏳'} {v.estado}
-                          </span>
-                        </div>
-
-                        <div className="venta-card-acciones">
-                          <button
-                            className="btn-accion-card btn-editar"
-                            onClick={() =>
-                              setEditando({
-                                ...v,
-                                cantidad: v.cantidad ?? '',
-                                valorUnitario: v.valorUnitario ?? '',
-                                abono: v.abono ?? v.pagado ?? 0,
-                                loteId: v.loteId || ''
-                              })
-                            }
-                          >
-                            ✏️ Editar
-                          </button>
-                          <button
-                            className="btn-accion-card btn-eliminar"
-                            onClick={() => eliminar(v.id)}
-                          >
-                            🗑 Eliminar
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-
-                  <div className="ventas-totales-mobile">
-                    <h4 className="totales-titulo">📊 Resumen general</h4>
-                    <div className="total-row">
-                      <span>💰 Total vendido</span>
-                      <strong style={{ color: '#5C3A21' }}>
-                        ${totalVendido.toLocaleString('es-CO')}
-                      </strong>
-                    </div>
-                    <div className="total-row">
-                      <span>✅ Total abonado</span>
-                      <strong style={{ color: '#2A9D8F' }}>
-                        ${totalPagado.toLocaleString('es-CO')}
-                      </strong>
-                    </div>
-                    <div className="total-row total-row-destacado">
-                      <span>⏳ Saldo por cobrar</span>
-                      <strong style={{ color: '#F26B7A' }}>
-                        ${totalSaldo.toLocaleString('es-CO')}
-                      </strong>
-                    </div>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
+          )}
         </div>
       </div>
 
