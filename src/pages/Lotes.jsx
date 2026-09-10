@@ -29,6 +29,65 @@ const UNIDADES = [
 ];
 
 /* ═══════════════════════════════════════════════════════════
+   🔥 HELPERS DE FECHA (SIN TIMEZONE)
+   ═══════════════════════════════════════════════════════════ */
+
+// 📅 Formatea una fecha para MOSTRAR (ej: "26/07/2026")
+const formatearFecha = (fecha) => {
+  if (!fecha) return '...';
+
+  // Timestamp de Firestore
+  if (fecha.toDate) {
+    return fecha.toDate().toLocaleDateString('es-CO');
+  }
+
+  // String "YYYY-MM-DD" → formatear sin timezone
+  if (typeof fecha === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      const [yyyy, mm, dd] = fecha.split('-');
+      return `${dd}/${mm}/${yyyy}`;
+    }
+    if (fecha.includes('T')) {
+      const [datePart] = fecha.split('T');
+      const [yyyy, mm, dd] = datePart.split('-');
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  }
+
+  return new Date(fecha).toLocaleDateString('es-CO');
+};
+
+// 📅 Formatea una fecha para el INPUT type="date" (ej: "2026-07-26")
+const normalizarFechaInput = (fecha) => {
+  if (!fecha) return new Date().toISOString().split('T')[0];
+
+  // Timestamp de Firestore
+  if (fecha.toDate) {
+    const d = fecha.toDate();
+    const yyyy = d.getUTCFullYear();
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // Date de JS
+  if (fecha instanceof Date) {
+    const yyyy = fecha.getUTCFullYear();
+    const mm = String(fecha.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(fecha.getUTCDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  // String
+  if (typeof fecha === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return fecha;
+    if (fecha.includes('T')) return fecha.split('T')[0];
+  }
+
+  return new Date().toISOString().split('T')[0];
+};
+
+/* ═══════════════════════════════════════════════════════════
    COMPONENTE: IngredienteEditable
    ═══════════════════════════════════════════════════════════ */
 function IngredienteEditable({ ingrediente, abrevUnidad, onUpdate, onDelete }) {
@@ -475,12 +534,6 @@ function Lotes({ usuario, onAbrirSidebar }) {
 
   const todosSeleccionados =
     lotes.length > 0 && seleccionados.length === lotes.length;
-
-  const formatearFecha = (fecha) => {
-    if (!fecha) return '...';
-    if (fecha.toDate) return fecha.toDate().toLocaleDateString('es-CO');
-    return new Date(fecha).toLocaleDateString('es-CO');
-  };
 
   const estadoLote = (l) => {
     const v = getVentasLote(l.id);
@@ -936,6 +989,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
                                     onClick={() =>
                                       setEditando({
                                         ...l,
+                                        fecha: normalizarFechaInput(l.fecha),
                                         perdidas: l.perdidas ?? '',
                                         ingredientes: l.ingredientes || []
                                       })
@@ -1090,6 +1144,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
                               onClick={() =>
                                 setEditando({
                                   ...l,
+                                  fecha: normalizarFechaInput(l.fecha),
                                   perdidas: l.perdidas ?? '',
                                   ingredientes: l.ingredientes || []
                                 })

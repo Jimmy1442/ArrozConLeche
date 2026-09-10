@@ -237,10 +237,28 @@ function Ventas({ usuario, onAbrirSidebar }) {
     .reduce((s, v) => s + (v.saldo || 0), 0);
 
   const formatearFecha = (fecha) => {
-    if (!fecha) return '...';
-    if (fecha.toDate) return fecha.toDate().toLocaleDateString('es-CO');
-    return new Date(fecha).toLocaleDateString('es-CO');
-  };
+  if (!fecha) return '...';
+
+  // Timestamp de Firestore
+  if (fecha.toDate) {
+    return fecha.toDate().toLocaleDateString('es-CO');
+  }
+
+  // String "YYYY-MM-DD" → formatear sin timezone
+  if (typeof fecha === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      const [yyyy, mm, dd] = fecha.split('-');
+      return `${dd}/${mm}/${yyyy}`;
+    }
+    if (fecha.includes('T')) {
+      const [datePart] = fecha.split('T');
+      const [yyyy, mm, dd] = datePart.split('-');
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  }
+
+  return new Date(fecha).toLocaleDateString('es-CO');
+};
 
   const colorEntrega = (e) =>
     e === 'Entregado' ? 'badge-verde' : 'badge-amarillo';

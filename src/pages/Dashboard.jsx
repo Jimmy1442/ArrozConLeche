@@ -11,7 +11,7 @@ import TopBar from '../components/TopBar';
 import StatCard from '../components/StatCard';
 import '../styles/Dashboard.css';
 
-function Dashboard({ usuario, onAbrirSidebar  }) {
+function Dashboard({ usuario, onAbrirSidebar }) {
   const [ventas, setVentas] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [clientes, setClientes] = useState([]);
@@ -96,8 +96,51 @@ function Dashboard({ usuario, onAbrirSidebar  }) {
   const totalVentas = ventas.reduce((s, v) => s + (v.total || 0), 0);
   const totalPagado = ventas.reduce((s, v) => s + (v.pagado || 0), 0);
   const totalPorCobrar = ventas.reduce((s, v) => s + (v.saldo || 0), 0);
-  const gananciaNeta = totalPagado - totalCostos;
-  const gananciaAprox = totalVentas - totalCostos;
+
+  // 💡 GANANCIA NETA: dinero realmente cobrado - costos de lotes con ventas
+  const lotesConVentas = lotes.filter((l) => {
+    const v = getVentasLote(l.id);
+    return v.pedidos > 0;
+  });
+  const costosLotesConVentas = lotesConVentas.reduce(
+    (s, l) => s + (l.costoTotal || 0),
+    0
+  );
+  const gananciaNeta = totalPagado - costosLotesConVentas;
+
+  // 💡 GANANCIA APROXIMADA = Total producido × valor unitario de cada lote
+// (Valor total de la producción si se vende todo)
+const gananciaAproximada = lotes.reduce((suma, l) => {
+  const producidos = Number(l.cantidadProducida) || 0;
+  const valorUnitario = Number(l.valorUnitario) || 0;
+  return suma + (producidos * valorUnitario);
+}, 0);
+
+  // 🏆 Top clientes (con unidades vendidas)
+  const topClientes = Object.values(
+    ventas.reduce((acc, v) => {
+      const key = v.clienteId || v.clienteNombre;
+      if (!acc[key]) {
+        acc[key] = {
+          nombre: v.clienteNombre,
+          telefono: v.clienteTelefono,
+          total: 0,
+          pagado: 0,
+          saldo: 0,
+          pedidos: 0,
+          unidades: 0
+        };
+      }
+      acc[key].total += v.total || 0;
+      acc[key].pagado += v.pagado || 0;
+      acc[key].saldo += v.saldo || 0;
+      acc[key].pedidos += 1;
+      acc[key].unidades += Number(v.cantidad) || 0;
+      return acc;
+    }, {})
+  )
+    .sort((a, b) => b.pagado - a.pagado)
+    .slice(0, 5);
 
   // 🏆 Top lotes rentables
   const topLotes = lotes
@@ -114,33 +157,29 @@ function Dashboard({ usuario, onAbrirSidebar  }) {
     .sort((a, b) => b.ganancia - a.ganancia)
     .slice(0, 5);
 
-  // 🏆 Top clientes
-  const topClientes = Object.values(
-    ventas.reduce((acc, v) => {
-      const key = v.clienteId || v.clienteNombre;
-      if (!acc[key]) {
-        acc[key] = {
-          nombre: v.clienteNombre,
-          telefono: v.clienteTelefono,
-          pagado: 0,
-          saldo: 0,
-          pedidos: 0
-        };
-      }
-      acc[key].pagado += v.pagado || 0;
-      acc[key].saldo += v.saldo || 0;
-      acc[key].pedidos += 1;
-      return acc;
-    }, {})
-  )
-    .sort((a, b) => b.pagado - a.pagado)
-    .slice(0, 5);
-
   const formatearFecha = (fecha) => {
-    if (!fecha) return '...';
-    if (fecha.toDate) return fecha.toDate().toLocaleDateString('es-CO');
-    return new Date(fecha).toLocaleDateString('es-CO');
-  };
+  if (!fecha) return '...';
+
+  // Timestamp de Firestore
+  if (fecha.toDate) {
+    return fecha.toDate().toLocaleDateString('es-CO');
+  }
+
+  // String "YYYY-MM-DD" → formatear sin timezone
+  if (typeof fecha === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      const [yyyy, mm, dd] = fecha.split('-');
+      return `${dd}/${mm}/${yyyy}`;
+    }
+    if (fecha.includes('T')) {
+      const [datePart] = fecha.split('T');
+      const [yyyy, mm, dd] = datePart.split('-');
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  }
+
+  return new Date(fecha).toLocaleDateString('es-CO');
+};
 
   // 📊 Progreso del lote activo
   const progresoVentas = loteActivo
@@ -157,10 +196,10 @@ function Dashboard({ usuario, onAbrirSidebar  }) {
     <div className="dashboard-layout">
       <div className="dashboard-main">
         <TopBar
-  usuario={usuario}
-  titulo="Panel de control"
-  onAbrirSidebar={onAbrirSidebar}
-/>
+          usuario={usuario}
+          titulo="Panel de control"
+          onAbrirSidebar={onAbrirSidebar}
+        />
 
         <div className="dashboard-content">
           {/* Bienvenida */}
@@ -354,16 +393,16 @@ function Dashboard({ usuario, onAbrirSidebar  }) {
             />
             <StatCard
               icon="✅"
-              label="Ganancia neta (cobrado − costos)"
+              label="Ganancia neta (cobrado − costos con ventas)"
               valor={`$${gananciaNeta.toLocaleString('es-CO')}`}
               color={gananciaNeta >= 0 ? 'turquesa' : 'coral'}
             />
             <StatCard
-              icon="📈"
-              label="Ganancia aprox. (ventas − costos)"
-              valor={`$${gananciaAprox.toLocaleString('es-CO')}`}
-              color={gananciaAprox >= 0 ? 'turquesa' : 'coral'}
-            />
+  icon="📈"
+  label="Valor total de producción (producidos × precio)"
+  valor={`$${gananciaAproximada.toLocaleString('es-CO')}`}
+  color="turquesa"
+/>
           </div>
 
           {/* 🏆 TOP LOTES + 👥 TOP CLIENTES */}
@@ -421,7 +460,10 @@ function Dashboard({ usuario, onAbrirSidebar  }) {
                         <strong>{c.nombre}</strong>
                         <small>
                           {c.pedidos} pedido{c.pedidos !== 1 ? 's' : ''} ·{' '}
-                          {c.telefono || 'sin teléfono'}
+                          <strong style={{ color: '#2A9D8F' }}>
+                            {c.unidades}
+                          </strong>{' '}
+                          unidades vendidas
                         </small>
                       </div>
                       <div className="top-cliente-monto">
