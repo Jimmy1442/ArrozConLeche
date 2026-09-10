@@ -146,10 +146,17 @@ function Reportes({ usuario, onAbrirSidebar }) {
     0
   );
 
-  const gananciaNeta = totalPagado - totalCostos;
-  const gananciaAprox = totalVentas - totalCostos;
-  const margen =
-    totalVentas > 0 ? ((gananciaAprox / totalVentas) * 100).toFixed(1) : 0;
+ const gananciaNeta = totalPagado - totalCostos;
+
+// 💡 Valor total de la producción (producidos × valor unitario de cada lote)
+const gananciaAprox = lotesFiltrados.reduce((suma, l) => {
+  const producidos = Number(l.cantidadProducida) || 0;
+  const valorUnitario = Number(l.valorUnitario) || 0;
+  return suma + producidos * valorUnitario;
+}, 0);
+
+const margen =
+  totalVentas > 0 ? ((gananciaAprox / totalVentas) * 100).toFixed(1) : 0;
 
   const totalProducidos = lotesFiltrados.reduce(
     (s, l) => s + (l.cantidadProducida || 0),
@@ -388,12 +395,12 @@ function Reportes({ usuario, onAbrirSidebar }) {
               valor={`$${gananciaNeta.toLocaleString('es-CO')}`}
               color={gananciaNeta >= 0 ? 'turquesa' : 'coral'}
             />
-            <StatCard
-              icon="📈"
-              label="Ganancia aproximada"
-              valor={`$${gananciaAprox.toLocaleString('es-CO')}`}
-              color={gananciaAprox >= 0 ? 'turquesa' : 'coral'}
-            />
+           <StatCard
+  icon="📈"
+  label="Valor total de producción (producidos × precio)"
+  valor={`$${gananciaAprox.toLocaleString('es-CO')}`}
+  color="turquesa"
+/>
           </div>
 
           {/* Resumen ejecutivo */}
