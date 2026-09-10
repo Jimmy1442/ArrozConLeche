@@ -1283,5 +1283,5 @@ function Ventas({ usuario, onAbrirSidebar }) {
     </div>
   );
 }
-
+ 
 export default Ventas;
