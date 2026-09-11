@@ -32,6 +32,16 @@ const UNIDADES = [
    🔥 HELPERS DE FECHA (SIN TIMEZONE)
    ═══════════════════════════════════════════════════════════ */
 
+// 📅 Fecha de HOY en formato YYYY-MM-DD (hora LOCAL)
+const hoyISO = () => {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+// 📅 Formatea una fecha para MOSTRAR (ej: "26/07/2026")
 const formatearFecha = (fecha) => {
   if (!fecha) return '...';
 
@@ -54,8 +64,9 @@ const formatearFecha = (fecha) => {
   return new Date(fecha).toLocaleDateString('es-CO');
 };
 
+// 📅 Formatea una fecha para el INPUT type="date" (ej: "2026-07-26")
 const normalizarFechaInput = (fecha) => {
-  if (!fecha) return new Date().toISOString().split('T')[0];
+  if (!fecha) return hoyISO();
 
   if (fecha.toDate) {
     const d = fecha.toDate();
@@ -77,7 +88,7 @@ const normalizarFechaInput = (fecha) => {
     if (fecha.includes('T')) return fecha.split('T')[0];
   }
 
-  return new Date().toISOString().split('T')[0];
+  return hoyISO();
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -212,21 +223,25 @@ function IngredienteEditable({ ingrediente, abrevUnidad, onUpdate, onDelete }) {
 function Lotes({ usuario, onAbrirSidebar }) {
   const [lotes, setLotes] = useState([]);
   const [ventas, setVentas] = useState([]);
+  const [gastos, setGastos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [error, setError] = useState('');
 
+  // ➕ Formulario de creación
   const [nuevo, setNuevo] = useState({
     nombre: '',
-    fecha: new Date().toISOString().split('T')[0],
+    fecha: hoyISO(),
     presentacion: '',
     cantidadProducida: '',
     valorUnitario: '',
     perdidas: '',
+    base: '',                    // 👈 NUEVO
     ingredientes: []
   });
 
+  // 🧾 Ingrediente temporal (creación)
   const [ingredienteTemp, setIngredienteTemp] = useState({
     nombre: '',
     cantidad: '',
@@ -238,6 +253,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
   const [editando, setEditando] = useState(null);
   const [guardandoEdit, setGuardandoEdit] = useState(false);
 
+  // 🧾 Ingrediente temporal (edición)
   const [ingredienteTempEdit, setIngredienteTempEdit] = useState({
     nombre: '',
     cantidad: '',
@@ -245,7 +261,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
     valorUnitario: ''
   });
 
-  // 🔥 Cargar lotes y ventas
+  // 🔥 Cargar lotes, ventas y gastos
   useEffect(() => {
     const qLotes = query(collection(db, 'lotes'), orderBy('fecha', 'desc'));
     const unsubLotes = onSnapshot(
@@ -266,9 +282,15 @@ function Lotes({ usuario, onAbrirSidebar }) {
       setVentas(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
 
+    const qGastos = query(collection(db, 'gastos'), orderBy('fecha', 'desc'));
+    const unsubGastos = onSnapshot(qGastos, (snap) => {
+      setGastos(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+
     return () => {
       unsubLotes();
       unsubVentas();
+      unsubGastos();
     };
   }, []);
 
@@ -304,6 +326,23 @@ function Lotes({ usuario, onAbrirSidebar }) {
       pedidos: 0
     };
 
+  // 🗂️ Gastos agrupados por loteId
+  const gastosPorLote = useMemo(() => {
+    const mapa = {};
+    gastos.forEach((g) => {
+      if (!g.loteId) return;
+      if (!mapa[g.loteId]) {
+        mapa[g.loteId] = { total: 0, cantidad: 0 };
+      }
+      mapa[g.loteId].total += Number(g.valor) || 0;
+      mapa[g.loteId].cantidad += 1;
+    });
+    return mapa;
+  }, [gastos]);
+
+  const getGastosLote = (loteId) =>
+    gastosPorLote[loteId] || { total: 0, cantidad: 0 };
+
   // 🧮 Cálculos del formulario
   const producidosForm = Number(nuevo.cantidadProducida) || 0;
   const perdidasForm = Number(nuevo.perdidas) || 0;
@@ -333,7 +372,16 @@ function Lotes({ usuario, onAbrirSidebar }) {
     (s, i) => s + (Number(i.cantidad) || 0) * (Number(i.valorUnitario) || 0),
     0
   );
-  const gananciaEdit = ventasEdit.total - costoTotalEdit;
+
+  // 🗂️ Gastos y Base del lote editando
+  const gastosEdit = editando
+    ? getGastosLote(editando.id)
+    : { total: 0, cantidad: 0 };
+  const baseEdit = Number(editando?.base) || 0;
+
+  // 💰 Total real = Cobrado + Base − Gastos − Costos
+  const totalRealEdit =
+    ventasEdit.pagado + baseEdit - gastosEdit.total - costoTotalEdit;
 
   // ➕ Agregar ingrediente (formulario de creación)
   const agregarIngredienteTemp = () => {
@@ -424,6 +472,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
         cantidadProducida: producidosForm,
         valorUnitario: Number(nuevo.valorUnitario) || 0,
         perdidas: perdidasForm,
+        base: Number(nuevo.base) || 0,       // 👈 NUEVO
         ingredientes: nuevo.ingredientes || [],
         costoTotal: costoTotalForm,
         creadoPor: usuario?.uid || 'anónimo',
@@ -433,11 +482,12 @@ function Lotes({ usuario, onAbrirSidebar }) {
 
       setNuevo({
         nombre: '',
-        fecha: new Date().toISOString().split('T')[0],
+        fecha: hoyISO(),
         presentacion: '',
         cantidadProducida: '',
         valorUnitario: '',
         perdidas: '',
+        base: '',                          // 👈 NUEVO
         ingredientes: []
       });
       setIngredienteTemp({
@@ -472,6 +522,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
         cantidadProducida: producidosEdit,
         valorUnitario: Number(editando.valorUnitario) || 0,
         perdidas: perdidasEdit,
+        base: Number(editando.base) || 0,   // 👈 NUEVO
         ingredientes: editando.ingredientes || [],
         costoTotal: costoTotalEdit,
         editadoPor: usuario?.email || 'anónimo'
@@ -643,6 +694,24 @@ function Lotes({ usuario, onAbrirSidebar }) {
                       setNuevo({ ...nuevo, valorUnitario: e.target.value })
                     }
                   />
+                </div>
+
+                {/* 💵 BASE - NUEVO CAMPO */}
+                <div className="form-field">
+                  <label>💵 Base (aporte extra)</label>
+                  <input
+                    type="number"
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                    value={nuevo.base}
+                    onChange={(e) =>
+                      setNuevo({ ...nuevo, base: e.target.value })
+                    }
+                  />
+                  <small className="hint">
+                    💡 Monto extra que metes al lote (capital, fondo, etc.)
+                  </small>
                 </div>
 
                 <div className="form-seccion-titulo">
@@ -874,8 +943,10 @@ function Lotes({ usuario, onAbrirSidebar }) {
                         <th>Pérdidas</th>
                         <th>Facturado</th>
                         <th>Cobrado</th>
+                        <th>Base</th>
+                        <th>Gastos</th>
                         <th>Costos</th>
-                        <th>Ganancia</th>
+                        <th>Total Real</th>
                         <th>Estado</th>
                         <th style={{ width: '100px' }}>Acciones</th>
                       </tr>
@@ -883,14 +954,14 @@ function Lotes({ usuario, onAbrirSidebar }) {
                     <tbody>
                       {cargando ? (
                         <tr>
-                          <td colSpan="12" style={{ textAlign: 'center', padding: '30px' }}>
+                          <td colSpan="14" style={{ textAlign: 'center', padding: '30px' }}>
                             Cargando lotes... 🍚
                           </td>
                         </tr>
                       ) : lotes.length === 0 ? (
                         <tr>
                           <td
-                            colSpan="12"
+                            colSpan="14"
                             style={{ textAlign: 'center', padding: '40px', color: '#8B7A66' }}
                           >
                             🍚 Aún no hay lotes registrados
@@ -903,8 +974,11 @@ function Lotes({ usuario, onAbrirSidebar }) {
                           const activo = seleccionados.includes(l.id);
                           const estado = estadoLote(l);
                           const v = getVentasLote(l.id);
+                          const g = getGastosLote(l.id);
                           const costo = l.costoTotal || 0;
-                          const ganancia = (v.total || 0) - costo;
+                          const base = l.base || 0;
+                          const totalReal =
+                            v.pagado + base - g.total - costo;
                           return (
                             <tr key={l.id} className={activo ? 'fila-seleccionada' : ''}>
                               <td>
@@ -956,6 +1030,16 @@ function Lotes({ usuario, onAbrirSidebar }) {
                                 )}
                               </td>
                               <td>
+                                <strong style={{ color: '#3DC5B8' }}>
+                                  ${base.toLocaleString('es-CO')}
+                                </strong>
+                              </td>
+                              <td>
+                                <strong style={{ color: '#F26B7A' }}>
+                                  ${g.total.toLocaleString('es-CO')}
+                                </strong>
+                              </td>
+                              <td>
                                 <strong style={{ color: '#F26B7A' }}>
                                   ${costo.toLocaleString('es-CO')}
                                 </strong>
@@ -963,10 +1047,10 @@ function Lotes({ usuario, onAbrirSidebar }) {
                               <td>
                                 <strong
                                   style={{
-                                    color: ganancia >= 0 ? '#2A9D8F' : '#F26B7A'
+                                    color: totalReal >= 0 ? '#2A9D8F' : '#F26B7A'
                                   }}
                                 >
-                                  ${ganancia.toLocaleString('es-CO')}
+                                  ${totalReal.toLocaleString('es-CO')}
                                 </strong>
                               </td>
                               <td>
@@ -983,6 +1067,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
                                       setEditando({
                                         ...l,
                                         fecha: normalizarFechaInput(l.fecha),
+                                        base: l.base ?? '',
                                         perdidas: l.perdidas ?? '',
                                         ingredientes: l.ingredientes || []
                                       })
@@ -1035,9 +1120,11 @@ function Lotes({ usuario, onAbrirSidebar }) {
                       const activo = seleccionados.includes(l.id);
                       const estado = estadoLote(l);
                       const v = getVentasLote(l.id);
+                      const g = getGastosLote(l.id);
                       const costo = l.costoTotal || 0;
-                      const ganancia = (v.total || 0) - costo;
-                      const esRentable = ganancia >= 0;
+                      const base = l.base || 0;
+                      const totalReal = v.pagado + base - g.total - costo;
+                      const esRentable = totalReal >= 0;
 
                       return (
                         <div
@@ -1075,10 +1162,10 @@ function Lotes({ usuario, onAbrirSidebar }) {
                             }`}
                           >
                             <span className="ganancia-label">
-                              {esRentable ? '💰 Ganancia' : '📉 Pérdida'}
+                              {esRentable ? '💰 Total real' : '📉 En pérdida'}
                             </span>
                             <strong className="ganancia-valor">
-                              ${Math.abs(ganancia).toLocaleString('es-CO')}
+                              ${Math.abs(totalReal).toLocaleString('es-CO')}
                             </strong>
                           </div>
 
@@ -1110,7 +1197,19 @@ function Lotes({ usuario, onAbrirSidebar }) {
                                 ${(v.pagado || 0).toLocaleString('es-CO')}
                               </strong>
                             </div>
-                            <div className="lote-info-item lote-info-full">
+                            <div className="lote-info-item">
+                              <span className="lote-info-label">💵 Base</span>
+                              <strong style={{ color: '#3DC5B8' }}>
+                                ${base.toLocaleString('es-CO')}
+                              </strong>
+                            </div>
+                            <div className="lote-info-item">
+                              <span className="lote-info-label">🗂️ Gastos</span>
+                              <strong style={{ color: '#F26B7A' }}>
+                                ${g.total.toLocaleString('es-CO')}
+                              </strong>
+                            </div>
+                            <div className="lote-info-item">
                               <span className="lote-info-label">🥛 Costos</span>
                               <strong style={{ color: '#F26B7A' }}>
                                 ${costo.toLocaleString('es-CO')}
@@ -1144,6 +1243,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
                                 setEditando({
                                   ...l,
                                   fecha: normalizarFechaInput(l.fecha),
+                                  base: l.base ?? '',
                                   perdidas: l.perdidas ?? '',
                                   ingredientes: l.ingredientes || []
                                 })
@@ -1209,6 +1309,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
             </div>
 
             <div className="modal-body modal-body-custom">
+              {/* SECCIÓN 1: DATOS BÁSICOS */}
               <section className="modal-seccion">
                 <h4 className="modal-seccion-titulo">
                   <span>📝 Datos del lote</span>
@@ -1279,10 +1380,31 @@ function Lotes({ usuario, onAbrirSidebar }) {
                         }
                       />
                     </div>
+
+                    {/* 💵 BASE - NUEVO CAMPO */}
+                    <div className="form-field">
+                      <label>💵 Base (aporte extra)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={editando.base || ''}
+                        onChange={(e) =>
+                          setEditando({
+                            ...editando,
+                            base: e.target.value
+                          })
+                        }
+                      />
+                      <small className="hint">
+                        💡 Monto extra que metes al lote
+                      </small>
+                    </div>
                   </div>
                 </div>
               </section>
 
+              {/* SECCIÓN 2: INGREDIENTES */}
               <section className="modal-seccion">
                 <h4 className="modal-seccion-titulo">
                   <span>🥛 Ingredientes usados</span>
@@ -1428,6 +1550,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
                 </div>
               </section>
 
+              {/* SECCIÓN 3: DISTRIBUCIÓN */}
               <section className="modal-seccion">
                 <h4 className="modal-seccion-titulo">
                   <span>📦 Distribución</span>
@@ -1496,7 +1619,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
                 </div>
               </section>
 
-              {/* SECCIÓN 4: RESUMEN FINANCIERO CON 4 TARJETAS */}
+              {/* SECCIÓN 4: RESUMEN FINANCIERO */}
               <section className="modal-seccion">
                 <h4 className="modal-seccion-titulo">
                   <span>💰 Resumen financiero</span>
@@ -1504,25 +1627,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
                 <div className="modal-seccion-content">
                   <div className="resumen-financiero resumen-financiero-4">
                     <div className="resumen-fin-card">
-                      <span className="resumen-fin-label">Costos</span>
-                      <strong
-                        className="resumen-fin-valor"
-                        style={{ color: '#F26B7A' }}
-                      >
-                        -${costoTotalEdit.toLocaleString('es-CO')}
-                      </strong>
-                    </div>
-                    <div className="resumen-fin-card">
-                      <span className="resumen-fin-label">Facturado</span>
-                      <strong
-                        className="resumen-fin-valor"
-                        style={{ color: '#8B7A66' }}
-                      >
-                        ${ventasEdit.total.toLocaleString('es-CO')}
-                      </strong>
-                    </div>
-                    <div className="resumen-fin-card">
-                      <span className="resumen-fin-label">Cobrado</span>
+                      <span className="resumen-fin-label">✅ Cobrado</span>
                       <strong
                         className="resumen-fin-valor"
                         style={{ color: '#2A9D8F' }}
@@ -1530,27 +1635,61 @@ function Lotes({ usuario, onAbrirSidebar }) {
                         +${ventasEdit.pagado.toLocaleString('es-CO')}
                       </strong>
                     </div>
-                    <div className="resumen-fin-card resumen-fin-total">
-                      <span className="resumen-fin-label">💰 Ganancia</span>
+                    <div className="resumen-fin-card">
+                      <span className="resumen-fin-label">💵 Base</span>
                       <strong
                         className="resumen-fin-valor"
-                        style={{
-                          color:
-                            gananciaEdit >= 0 ? '#2A9D8F' : '#F26B7A'
-                        }}
+                        style={{ color: '#3DC5B8' }}
                       >
-                        ${gananciaEdit.toLocaleString('es-CO')}
+                        +${baseEdit.toLocaleString('es-CO')}
+                      </strong>
+                    </div>
+                    <div className="resumen-fin-card">
+                      <span className="resumen-fin-label">
+                        🗂️ Gastos ({gastosEdit.cantidad})
+                      </span>
+                      <strong
+                        className="resumen-fin-valor"
+                        style={{ color: '#F26B7A' }}
+                      >
+                        -${gastosEdit.total.toLocaleString('es-CO')}
+                      </strong>
+                    </div>
+                    <div className="resumen-fin-card">
+                      <span className="resumen-fin-label">
+                        🥛 Costos ingredientes
+                      </span>
+                      <strong
+                        className="resumen-fin-valor"
+                        style={{ color: '#F26B7A' }}
+                      >
+                        -${costoTotalEdit.toLocaleString('es-CO')}
                       </strong>
                     </div>
                   </div>
 
+                  {/* 💰 TOTAL REAL */}
+                  <div className="formula-total">
+                    <span className="formula-label">
+                      💰 Total real = Cobrado + Base − Gastos − Costos
+                    </span>
+                    <strong
+                      className="formula-valor"
+                      style={{
+                        color: totalRealEdit >= 0 ? '#2A9D8F' : '#F26B7A'
+                      }}
+                    >
+                      ${totalRealEdit.toLocaleString('es-CO')}
+                    </strong>
+                  </div>
+
                   {ventasEdit.pedidos > 0 && (
-                    <div className="ventas-info-box">
+                    <div className="ventas-info-box" style={{ marginTop: 15 }}>
                       <p>
                         🛒 <strong>{ventasEdit.pedidos}</strong> pedido(s)
-                        asignado(s) · ✅ Cobrado:{' '}
+                        asignado(s) · 📊 Facturado:{' '}
                         <strong>
-                          ${ventasEdit.pagado.toLocaleString('es-CO')}
+                          ${ventasEdit.total.toLocaleString('es-CO')}
                         </strong>
                         {ventasEdit.saldo > 0 && (
                           <>

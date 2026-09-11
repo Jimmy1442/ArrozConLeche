@@ -1026,30 +1026,59 @@
 }
 
 /* ═══════════════════════════════════════════
-   TOTAL REAL DESTACADO
+   DOBLE TARJETA DE TOTALES
    ═══════════════════════════════════════════ */
+.total-real-doble {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 25px;
+}
+
+@media (max-width: 768px) {
+  .total-real-doble {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
 .total-real-destacado {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
-  padding: 24px 30px;
-  margin-bottom: 25px;
-  background: linear-gradient(135deg, #FFF0D4, #FFE5B8);
-  border: 3px solid #FFD93D;
+  padding: 22px 26px;
   border-radius: 20px;
-  box-shadow: 0 8px 25px rgba(255, 217, 61, 0.25);
+  border: 3px solid;
   flex-wrap: wrap;
+  transition: transform 0.25s ease;
+}
+
+.total-real-destacado:hover {
+  transform: translateY(-3px);
+}
+
+.total-real-naranja {
+  background: linear-gradient(135deg, #FFF0D4, #FFE5B8);
+  border-color: #FFB74D;
+  box-shadow: 0 8px 25px rgba(255, 183, 77, 0.25);
+}
+
+.total-real-verde {
+  background: linear-gradient(135deg, #E8F9F0, #D3F5E0);
+  border-color: #7ED9A8;
+  box-shadow: 0 8px 25px rgba(126, 217, 168, 0.25);
 }
 
 .total-real-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .total-real-label {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 800;
   color: #5C3A21;
   text-transform: uppercase;
@@ -1057,18 +1086,19 @@
 }
 
 .total-real-info small {
-  font-size: 12px;
+  font-size: 11px;
   color: #8B7A66;
   font-weight: 500;
 }
 
 .total-real-valor {
-  font-size: 34px;
+  font-size: 28px;
   font-weight: 800;
   letter-spacing: -1px;
+  white-space: nowrap;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 600px) {
   .total-real-destacado {
     flex-direction: column;
     align-items: flex-start;
@@ -1076,10 +1106,257 @@
   }
 
   .total-real-valor {
-    font-size: 28px;
+    font-size: 24px;
   }
 }
 
+/* ═══════════════════════════════════════════
+   DOBLE TOTAL EN CADA CARD DE LOTE
+   ═══════════════════════════════════════════ */
+.resumen-lote-totales {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .resumen-lote-totales {
+    flex-direction: column;
+    width: 100%;
+  }
+}
+
+.resumen-lote-total {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  padding: 10px 16px;
+  background: #FFFFFF;
+  border-radius: 12px;
+  border: 2px solid;
+  flex-shrink: 0;
+}
+
+.resumen-lote-total.total-naranja {
+  border-color: #FFB74D;
+}
+
+.resumen-lote-total.total-verde {
+  border-color: #7ED9A8;
+}
+
+.resumen-lote-total span {
+  font-size: 10px;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.resumen-lote-total strong {
+  font-size: 18px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+@media (max-width: 768px) {
+  .resumen-lote-total {
+    align-items: flex-start;
+    width: 100%;
+  }
+
+  .resumen-lote-total strong {
+    font-size: 16px;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RESTO DE ESTILOS DE RESUMEN-LOTE
+   ═══════════════════════════════════════════ */
+.resumen-lotes-lista {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.resumen-lote-card {
+  background: #FFFFFF;
+  border-radius: 18px;
+  border: 2px solid #F0EAD8;
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.resumen-lote-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.resumen-lote-card.resumen-positivo {
+  border-left: 6px solid #2A9D8F;
+}
+
+.resumen-lote-card.resumen-negativo {
+  border-left: 6px solid #F26B7A;
+}
+
+.resumen-lote-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 20px;
+  padding: 18px 22px;
+  background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
+  border-bottom: 2px dashed #F0EAD8;
+  flex-wrap: wrap;
+}
+
+.resumen-lote-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.resumen-lote-info strong {
+  color: #5C3A21;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.resumen-lote-info small {
+  color: #8B7A66;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.resumen-lote-desglose {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  padding: 18px 22px;
+}
+
+@media (max-width: 900px) {
+  .resumen-lote-desglose {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.desglose-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  background: #FFF8E7;
+  border-radius: 12px;
+  border-left: 3px solid #FFD93D;
+}
+
+.desglose-label {
+  font-size: 11px;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.desglose-valor {
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.resumen-lote-gastos {
+  padding: 0 22px 18px;
+}
+
+.gastos-titulo {
+  font-size: 12px;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.gastos-lista {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 8px;
+}
+
+.gasto-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: #FFE5E8;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.gasto-concepto {
+  color: #5C3A21;
+  font-weight: 600;
+}
+
+.gasto-valor {
+  color: #F26B7A;
+  font-weight: 800;
+  font-size: 13px;
+}
+
+.resumen-lote-extra {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+  padding: 12px 22px;
+  background: #FAF6EE;
+  border-top: 2px dashed #F0EAD8;
+  font-size: 13px;
+  color: #5C3A21;
+}
+
+.resumen-lote-extra strong {
+  font-weight: 800;
+}
+
+@media (max-width: 768px) {
+  .resumen-lote-header {
+    padding: 14px 16px;
+    flex-direction: column;
+  }
+
+  .resumen-lote-info strong {
+    font-size: 15px;
+  }
+
+  .resumen-lote-desglose {
+    grid-template-columns: 1fr 1fr;
+    padding: 14px 16px;
+    gap: 8px;
+  }
+
+  .desglose-valor {
+    font-size: 14px;
+  }
+
+  .resumen-lote-gastos {
+    padding: 0 16px 14px;
+  }
+
+  .gastos-lista {
+    grid-template-columns: 1fr;
+  }
+
+  .resumen-lote-extra {
+    padding: 10px 16px;
+    font-size: 12px;
+    gap: 10px;
+  }
+}
 /* ═══════════════════════════════════════════
    RESUMEN FINANCIERO POR LOTE
    ═══════════════════════════════════════════ */

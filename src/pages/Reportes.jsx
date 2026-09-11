@@ -20,7 +20,7 @@ function Reportes({ usuario, onAbrirSidebar }) {
 
   // 🎛️ Filtros
   const [loteSeleccionado, setLoteSeleccionado] = useState('todos');
-  const [filtroEstado, setFiltroEstado] = useState('todos'); // todos | rentables | perdida
+  const [filtroEstado, setFiltroEstado] = useState('todos');
 
   // 🔥 Cargar datos
   useEffect(() => {
@@ -47,7 +47,6 @@ function Reportes({ usuario, onAbrirSidebar }) {
       setClientes(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
 
-    // 👇 NUEVO: Cargar gastos
     const qGastos = query(
       collection(db, 'gastos'),
       orderBy('fecha', 'desc'),
@@ -124,18 +123,23 @@ function Reportes({ usuario, onAbrirSidebar }) {
   const getGastosLote = (loteId) =>
     gastosPorLote[loteId] || { total: 0, cantidad: 0, porConcepto: {} };
 
-  // 📊 Lotes con sus ventas, gastos y total real calculados
+  // 📊 Lotes con datos calculados (2 totales)
   const lotesConDatos = useMemo(() => {
     return lotes.map((l) => {
       const v = getVentasLote(l.id);
       const gastosLote = getGastosLote(l.id);
 
-      // 💰 Fórmula total real = Cobrado + Base − Gastos − Costos ingredientes
       const base = Number(l.base) || 0;
       const costosIngredientes = Number(l.costoTotal) || 0;
-      const totalReal = v.pagado + base - gastosLote.total - costosIngredientes;
 
-      // Ganancia sobre facturado (para el ranking)
+      // 💰 Total 1 = Cobrado + Base − Gastos
+      const totalConGastos = v.pagado + base - gastosLote.total;
+
+      // 💰 Total 2 = Cobrado + Base − Gastos − Costos ingredientes
+      const totalReal =
+        v.pagado + base - gastosLote.total - costosIngredientes;
+
+      // Ganancia sobre facturado (para ranking)
       const ganancia = v.total - costosIngredientes;
       const margen =
         v.total > 0 ? ((ganancia / v.total) * 100).toFixed(1) : '0.0';
@@ -148,21 +152,17 @@ function Reportes({ usuario, onAbrirSidebar }) {
         ventasSaldo: v.saldo,
         ventasPedidos: v.pedidos,
 
-        // 💵 Base
         base,
 
-        // 🗂️ Gastos
         gastosTotal: gastosLote.total,
         gastosCantidad: gastosLote.cantidad,
         gastosPorConcepto: gastosLote.porConcepto,
 
-        // 🥛 Costos
         costosIngredientes,
 
-        // 💰 Total real
+        totalConGastos,
         totalReal,
 
-        // Otros
         ganancia,
         margen
       };
@@ -192,7 +192,7 @@ function Reportes({ usuario, onAbrirSidebar }) {
     return ventas.filter((v) => v.loteId === loteSeleccionado);
   }, [ventas, loteSeleccionado]);
 
-  // 💰 Totales
+  // 💰 Totales generales
   const totalCostos = lotesFiltrados.reduce(
     (s, l) => s + (l.costoTotal || 0),
     0
@@ -215,18 +215,17 @@ function Reportes({ usuario, onAbrirSidebar }) {
     0
   );
 
-  // 💰 Total real del negocio = suma de totales reales de cada lote
+  // 💰 Total con gastos (sin costos de ingredientes)
+  const totalConGastosNegocio = lotesFiltrados.reduce(
+    (s, l) => s + (l.totalConGastos || 0),
+    0
+  );
+
+  // 💰 Total real (con gastos y costos de ingredientes)
   const totalRealNegocio = lotesFiltrados.reduce(
     (s, l) => s + (l.totalReal || 0),
     0
   );
-
-  // 💡 Valor total de la producción
-  const valorProduccion = lotesFiltrados.reduce((suma, l) => {
-    const producidos = Number(l.cantidadProducida) || 0;
-    const valorUnitario = Number(l.valorUnitario) || 0;
-    return suma + producidos * valorUnitario;
-  }, 0);
 
   // 🏆 Top lotes (por total real)
   const topLotes = useMemo(
@@ -459,24 +458,41 @@ function Reportes({ usuario, onAbrirSidebar }) {
             />
           </div>
 
-          {/* Tarjeta grande: Total Real del Negocio */}
-          <div className="total-real-destacado">
-            <div className="total-real-info">
-              <span className="total-real-label">
-                💰 Total real del negocio
-              </span>
-              <small>
-                Cobrado + Base − Gastos − Costos ingredientes
-              </small>
+          {/* Doble tarjeta: Total con gastos + Total real */}
+          <div className="total-real-doble">
+            <div className="total-real-destacado total-real-naranja">
+              <div className="total-real-info">
+                <span className="total-real-label">
+                  📊 Total con gastos
+                </span>
+                <small>Cobrado + Base − Gastos</small>
+              </div>
+              <strong
+                className="total-real-valor"
+                style={{
+                  color: totalConGastosNegocio >= 0 ? '#2A9D8F' : '#F26B7A'
+                }}
+              >
+                ${totalConGastosNegocio.toLocaleString('es-CO')}
+              </strong>
             </div>
-            <strong
-              className="total-real-valor"
-              style={{
-                color: totalRealNegocio >= 0 ? '#2A9D8F' : '#F26B7A'
-              }}
-            >
-              ${totalRealNegocio.toLocaleString('es-CO')}
-            </strong>
+
+            <div className="total-real-destacado total-real-verde">
+              <div className="total-real-info">
+                <span className="total-real-label">
+                  💰 Total real
+                </span>
+                <small>Cobrado + Base − Gastos − Costos</small>
+              </div>
+              <strong
+                className="total-real-valor"
+                style={{
+                  color: totalRealNegocio >= 0 ? '#2A9D8F' : '#F26B7A'
+                }}
+              >
+                ${totalRealNegocio.toLocaleString('es-CO')}
+              </strong>
+            </div>
           </div>
 
           {/* Top lotes rentables */}
@@ -519,16 +535,8 @@ function Reportes({ usuario, onAbrirSidebar }) {
                       >
                         ${l.totalReal.toLocaleString('es-CO')}
                       </strong>
-                      <small
-                        style={{
-                          color: '#8B7A66',
-                          display: 'flex',
-                          gap: 6
-                        }}
-                      >
-                        <span>
-                          cobrado ${(l.ventasPagado || 0).toLocaleString('es-CO')}
-                        </span>
+                      <small style={{ color: '#8B7A66' }}>
+                        cobrado ${(l.ventasPagado || 0).toLocaleString('es-CO')}
                       </small>
                     </div>
                   </div>
@@ -658,7 +666,6 @@ function Reportes({ usuario, onAbrirSidebar }) {
             <div className="dashboard-panel">
               <h3 className="panel-title">⚠️ Clientes con saldo pendiente</h3>
 
-              {/* Vista de tabla (PC/Tablet) */}
               <div className="tabla-deudas-desktop">
                 <div className="table-wrapper">
                   <table className="data-table">
@@ -689,9 +696,7 @@ function Reportes({ usuario, onAbrirSidebar }) {
                               <strong>{c.nombre}</strong>
                             </div>
                           </td>
-                          <td>
-                            {c.telefono ? `📞 ${c.telefono}` : '—'}
-                          </td>
+                          <td>{c.telefono ? `📞 ${c.telefono}` : '—'}</td>
                           <td>{c.pedidos}</td>
                           <td>${c.total.toLocaleString('es-CO')}</td>
                           <td>
@@ -711,7 +716,6 @@ function Reportes({ usuario, onAbrirSidebar }) {
                 </div>
               </div>
 
-              {/* Vista de cards (móvil) */}
               <div className="cards-deudas-mobile">
                 {clientesConDeuda.map((c, i) => {
                   const porcentajePagado =
@@ -801,7 +805,7 @@ function Reportes({ usuario, onAbrirSidebar }) {
             </div>
           )}
 
-          {/* Detalle de lotes — vista tabla + cards */}
+          {/* Detalle de lotes */}
           <div className="dashboard-panel">
             <h3 className="panel-title">
               📋 Detalle de lotes ({lotesFiltrados.length})
@@ -813,7 +817,6 @@ function Reportes({ usuario, onAbrirSidebar }) {
               </p>
             ) : (
               <>
-                {/* Vista de tabla (PC/Tablet) */}
                 <div className="tabla-reportes-desktop">
                   <div className="table-wrapper">
                     <table className="data-table">
@@ -933,7 +936,6 @@ function Reportes({ usuario, onAbrirSidebar }) {
                   </div>
                 </div>
 
-                {/* Vista de cards (móvil) */}
                 <div className="cards-reportes-mobile">
                   {lotesFiltrados.slice(0, 30).map((l) => {
                     const esRentable = l.totalReal >= 0;
@@ -1056,6 +1058,7 @@ function Reportes({ usuario, onAbrirSidebar }) {
                 {lotesFiltrados.map((l) => {
                   const conceptos = Object.entries(l.gastosPorConcepto || {});
                   const totalReal = l.totalReal;
+                  const totalConGastos = l.totalConGastos;
                   const esPositivo = totalReal >= 0;
 
                   return (
@@ -1065,7 +1068,7 @@ function Reportes({ usuario, onAbrirSidebar }) {
                         esPositivo ? 'resumen-positivo' : 'resumen-negativo'
                       }`}
                     >
-                      {/* Header */}
+                      {/* Header con 2 totales */}
                       <div className="resumen-lote-header">
                         <div className="resumen-lote-info">
                           <strong>🍚 {l.nombre}</strong>
@@ -1075,13 +1078,28 @@ function Reportes({ usuario, onAbrirSidebar }) {
                             {l.perdidas || 0} pérdidas
                           </small>
                         </div>
-                        <div className="resumen-lote-total">
-                          <span>💰 Total real</span>
-                          <strong
-                            style={{ color: esPositivo ? '#2A9D8F' : '#F26B7A' }}
-                          >
-                            ${totalReal.toLocaleString('es-CO')}
-                          </strong>
+                        <div className="resumen-lote-totales">
+                          <div className="resumen-lote-total total-naranja">
+                            <span>📊 Con gastos</span>
+                            <strong
+                              style={{
+                                color:
+                                  totalConGastos >= 0 ? '#2A9D8F' : '#F26B7A'
+                              }}
+                            >
+                              ${totalConGastos.toLocaleString('es-CO')}
+                            </strong>
+                          </div>
+                          <div className="resumen-lote-total total-verde">
+                            <span>💰 Total real</span>
+                            <strong
+                              style={{
+                                color: esPositivo ? '#2A9D8F' : '#F26B7A'
+                              }}
+                            >
+                              ${totalReal.toLocaleString('es-CO')}
+                            </strong>
+                          </div>
                         </div>
                       </div>
 
