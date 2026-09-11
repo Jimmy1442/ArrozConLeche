@@ -29,6 +29,71 @@ const CONCEPTOS = [
   'Otros'
 ];
 
+/* ═══════════════════════════════════════════════════════════
+   🔥 HELPERS DE FECHA (SIN TIMEZONE)
+   ═══════════════════════════════════════════════════════════ */
+
+// 📅 Fecha de HOY en formato YYYY-MM-DD (hora LOCAL, no UTC)
+const hoyISO = () => {
+  const d = new Date();
+  const yyyy = d.getFullYear();
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const dd = String(d.getDate()).padStart(2, '0');
+  return `${yyyy}-${mm}-${dd}`;
+};
+
+// 📅 Formatea una fecha para MOSTRAR (ej: "26/07/2026")
+const formatearFecha = (fecha) => {
+  if (!fecha) return '...';
+
+  // Timestamp de Firestore
+  if (fecha.toDate) {
+    return fecha.toDate().toLocaleDateString('es-CO');
+  }
+
+  // String "YYYY-MM-DD" → formatear sin timezone
+  if (typeof fecha === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+      const [yyyy, mm, dd] = fecha.split('-');
+      return `${dd}/${mm}/${yyyy}`;
+    }
+    if (fecha.includes('T')) {
+      const [datePart] = fecha.split('T');
+      const [yyyy, mm, dd] = datePart.split('-');
+      return `${dd}/${mm}/${yyyy}`;
+    }
+  }
+
+  return new Date(fecha).toLocaleDateString('es-CO');
+};
+
+// 📅 Formatea una fecha para el INPUT type="date" (ej: "2026-07-26")
+const normalizarFechaInput = (fecha) => {
+  if (!fecha) return hoyISO();
+
+  if (fecha.toDate) {
+    const d = fecha.toDate();
+    const yyyy = d.getUTCFullYear();
+    const mm = String(d.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(d.getUTCDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  if (fecha instanceof Date) {
+    const yyyy = fecha.getUTCFullYear();
+    const mm = String(fecha.getUTCMonth() + 1).padStart(2, '0');
+    const dd = String(fecha.getUTCDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+  }
+
+  if (typeof fecha === 'string') {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return fecha;
+    if (fecha.includes('T')) return fecha.split('T')[0];
+  }
+
+  return hoyISO();
+};
+
 function Gastos({ usuario, onAbrirSidebar }) {
   const [gastos, setGastos] = useState([]);
   const [lotes, setLotes] = useState([]);
@@ -43,21 +108,21 @@ function Gastos({ usuario, onAbrirSidebar }) {
     concepto: 'Transporte',
     descripcion: '',
     valor: '',
-    fecha: new Date().toISOString().split('T')[0]
+    fecha: hoyISO()
   });
 
   const [seleccionados, setSeleccionados] = useState([]);
   const [editando, setEditando] = useState(null);
   const [guardandoEdit, setGuardandoEdit] = useState(false);
 
- // 🎛️ Filtros
-const [filtroLote, setFiltroLote] = useState('todos');
-const [filtroConcepto, setFiltroConcepto] = useState('todos');
-const [busqueda, setBusqueda] = useState('');
+  // 🎛️ Filtros
+  const [filtroLote, setFiltroLote] = useState('todos');
+  const [filtroConcepto, setFiltroConcepto] = useState('todos');
+  const [busqueda, setBusqueda] = useState('');
 
-// 🔽 Dropdown custom para lote
-const [dropdownLoteAbierto, setDropdownLoteAbierto] = useState(false);
-const dropdownLoteRef = useRef(null);
+  // 🔽 Dropdown custom para lote
+  const [dropdownLoteAbierto, setDropdownLoteAbierto] = useState(false);
+  const dropdownLoteRef = useRef(null);
 
   // 📄 Paginación
   const [paginaActual, setPaginaActual] = useState(1);
@@ -90,43 +155,23 @@ const dropdownLoteRef = useRef(null);
     };
   }, []);
 
-  
-
-  // 🔒 Cerrar dropdown al hacer clic fuera o presionar Escape
-useEffect(() => {
-  const handleClickFuera = (e) => {
-    if (dropdownLoteRef.current && !dropdownLoteRef.current.contains(e.target)) {
-      setDropdownLoteAbierto(false);
-    }
-  };
-  const handleEsc = (e) => {
-    if (e.key === 'Escape') setDropdownLoteAbierto(false);
-  };
-  document.addEventListener('mousedown', handleClickFuera);
-  document.addEventListener('keydown', handleEsc);
-  return () => {
-    document.removeEventListener('mousedown', handleClickFuera);
-    document.removeEventListener('keydown', handleEsc);
-  };
-}, []);
-
-  // 📅 Formatear fecha
-  const formatearFecha = (fecha) => {
-    if (!fecha) return '...';
-    if (fecha.toDate) return fecha.toDate().toLocaleDateString('es-CO');
-    if (typeof fecha === 'string') {
-      if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-        const [yyyy, mm, dd] = fecha.split('-');
-        return `${dd}/${mm}/${yyyy}`;
+  // 🔒 Cerrar dropdown al hacer clic fuera
+  useEffect(() => {
+    const handleClickFuera = (e) => {
+      if (dropdownLoteRef.current && !dropdownLoteRef.current.contains(e.target)) {
+        setDropdownLoteAbierto(false);
       }
-      if (fecha.includes('T')) {
-        const [datePart] = fecha.split('T');
-        const [yyyy, mm, dd] = datePart.split('-');
-        return `${dd}/${mm}/${yyyy}`;
-      }
-    }
-    return new Date(fecha).toLocaleDateString('es-CO');
-  };
+    };
+    const handleEsc = (e) => {
+      if (e.key === 'Escape') setDropdownLoteAbierto(false);
+    };
+    document.addEventListener('mousedown', handleClickFuera);
+    document.addEventListener('keydown', handleEsc);
+    return () => {
+      document.removeEventListener('mousedown', handleClickFuera);
+      document.removeEventListener('keydown', handleEsc);
+    };
+  }, []);
 
   // 🔍 Filtrar gastos
   const gastosFiltrados = gastos.filter((g) => {
@@ -201,7 +246,7 @@ useEffect(() => {
         concepto: 'Transporte',
         descripcion: '',
         valor: '',
-        fecha: new Date().toISOString().split('T')[0]
+        fecha: hoyISO()
       });
       setMostrarForm(false);
     } catch (err) {
@@ -310,12 +355,6 @@ useEffect(() => {
     return colores[concepto] || 'badge-verde';
   };
 
-  // Nombre del lote seleccionado (para el dropdown)
-  const nombreLoteFiltro =
-    filtroLote === 'todos'
-      ? null
-      : lotes.find((l) => l.id === filtroLote)?.nombre || '';
-
   return (
     <div className="modulo-layout">
       <div className="modulo-main">
@@ -358,92 +397,92 @@ useEffect(() => {
           {/* 🔍 BUSCADOR Y FILTROS */}
           {!mostrarForm && (
             <>
-             <div className="filtros-ventas">
-  <div className="buscador-ventas">
-    <span className="buscador-icon">🔍</span>
-    <input
-      type="text"
-      placeholder="Buscar por concepto, descripción, lote..."
-      value={busqueda}
-      onChange={(e) => setBusqueda(e.target.value)}
-    />
-    {busqueda && (
-      <button
-        className="buscador-limpiar"
-        onClick={() => setBusqueda('')}
-        title="Limpiar búsqueda"
-      >
-        ✖
-      </button>
-    )}
-  </div>
+              <div className="filtros-ventas">
+                <div className="buscador-ventas">
+                  <span className="buscador-icon">🔍</span>
+                  <input
+                    type="text"
+                    placeholder="Buscar por concepto, descripción, lote..."
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                  />
+                  {busqueda && (
+                    <button
+                      className="buscador-limpiar"
+                      onClick={() => setBusqueda('')}
+                      title="Limpiar búsqueda"
+                    >
+                      ✖
+                    </button>
+                  )}
+                </div>
 
-  {/* Filtro por lote - Dropdown custom */}
-  <div className="filtro-lote-ventas" ref={dropdownLoteRef}>
-    <button
-      type="button"
-      className="filtro-lote-trigger"
-      onClick={() => setDropdownLoteAbierto(!dropdownLoteAbierto)}
-    >
-      <span className="filtro-lote-icon">🍚</span>
-      <span className="filtro-lote-label">
-        {filtroLote === 'todos' ? (
-          <>📚 Todos los lotes ({gastos.length})</>
-        ) : (
-          <>
-            🍚 {lotes.find((l) => l.id === filtroLote)?.nombre || 'Lote'} (
-            {gastos.filter((g) => g.loteId === filtroLote).length})
-          </>
-        )}
-      </span>
-      <span className={`filtro-lote-arrow ${dropdownLoteAbierto ? 'abierto' : ''}`}>
-        ▼
-      </span>
-    </button>
+                {/* Filtro por lote - Dropdown custom */}
+                <div className="filtro-lote-ventas" ref={dropdownLoteRef}>
+                  <button
+                    type="button"
+                    className="filtro-lote-trigger"
+                    onClick={() => setDropdownLoteAbierto(!dropdownLoteAbierto)}
+                  >
+                    <span className="filtro-lote-icon">🍚</span>
+                    <span className="filtro-lote-label">
+                      {filtroLote === 'todos' ? (
+                        <>📚 Todos los lotes ({gastos.length})</>
+                      ) : (
+                        <>
+                          🍚 {lotes.find((l) => l.id === filtroLote)?.nombre || 'Lote'} (
+                          {gastos.filter((g) => g.loteId === filtroLote).length})
+                        </>
+                      )}
+                    </span>
+                    <span className={`filtro-lote-arrow ${dropdownLoteAbierto ? 'abierto' : ''}`}>
+                      ▼
+                    </span>
+                  </button>
 
-    {dropdownLoteAbierto && (
-      <div className="filtro-lote-menu">
-        <button
-          type="button"
-          className={`filtro-lote-opcion ${
-            filtroLote === 'todos' ? 'activa' : ''
-          }`}
-          onClick={() => {
-            setFiltroLote('todos');
-            setDropdownLoteAbierto(false);
-          }}
-        >
-          <span className="opcion-icon">📚</span>
-          <span className="opcion-texto">Todos los lotes</span>
-          <span className="opcion-cantidad">{gastos.length}</span>
-          {filtroLote === 'todos' && <span className="opcion-check">✓</span>}
-        </button>
+                  {dropdownLoteAbierto && (
+                    <div className="filtro-lote-menu">
+                      <button
+                        type="button"
+                        className={`filtro-lote-opcion ${
+                          filtroLote === 'todos' ? 'activa' : ''
+                        }`}
+                        onClick={() => {
+                          setFiltroLote('todos');
+                          setDropdownLoteAbierto(false);
+                        }}
+                      >
+                        <span className="opcion-icon">📚</span>
+                        <span className="opcion-texto">Todos los lotes</span>
+                        <span className="opcion-cantidad">{gastos.length}</span>
+                        {filtroLote === 'todos' && <span className="opcion-check">✓</span>}
+                      </button>
 
-        {lotes.map((l) => {
-          const cant = gastos.filter((g) => g.loteId === l.id).length;
-          return (
-            <button
-              key={l.id}
-              type="button"
-              className={`filtro-lote-opcion ${
-                filtroLote === l.id ? 'activa' : ''
-              }`}
-              onClick={() => {
-                setFiltroLote(l.id);
-                setDropdownLoteAbierto(false);
-              }}
-            >
-              <span className="opcion-icon">🍚</span>
-              <span className="opcion-texto">{l.nombre}</span>
-              <span className="opcion-cantidad">{cant}</span>
-              {filtroLote === l.id && <span className="opcion-check">✓</span>}
-            </button>
-          );
-        })}
-      </div>
-    )}
-  </div>
-</div>
+                      {lotes.map((l) => {
+                        const cant = gastos.filter((g) => g.loteId === l.id).length;
+                        return (
+                          <button
+                            key={l.id}
+                            type="button"
+                            className={`filtro-lote-opcion ${
+                              filtroLote === l.id ? 'activa' : ''
+                            }`}
+                            onClick={() => {
+                              setFiltroLote(l.id);
+                              setDropdownLoteAbierto(false);
+                            }}
+                          >
+                            <span className="opcion-icon">🍚</span>
+                            <span className="opcion-texto">{l.nombre}</span>
+                            <span className="opcion-cantidad">{cant}</span>
+                            {filtroLote === l.id && <span className="opcion-check">✓</span>}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+              </div>
 
               {/* Filtro por concepto */}
               <div className="filtros-conceptos">
@@ -677,6 +716,8 @@ useEffect(() => {
                                     onClick={() =>
                                       setEditando({
                                         ...g,
+                                        // 🔥 Normalizar la fecha para el input
+                                        fecha: normalizarFechaInput(g.fecha),
                                         valor: g.valor ?? '',
                                         descripcion: g.descripcion ?? ''
                                       })
@@ -828,6 +869,8 @@ useEffect(() => {
                               onClick={() =>
                                 setEditando({
                                   ...g,
+                                  // 🔥 Normalizar la fecha para el input
+                                  fecha: normalizarFechaInput(g.fecha),
                                   valor: g.valor ?? '',
                                   descripcion: g.descripcion ?? ''
                                 })
