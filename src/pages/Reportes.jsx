@@ -133,48 +133,33 @@ function Reportes({ usuario, onAbrirSidebar }) {
     (s, l) => s + (l.costoTotal || 0),
     0
   );
+
+  // 💰 Ventas FACTURADAS (lo que se vendió, aunque no esté cobrado)
   const totalVentas = lotesFiltrados.reduce(
     (s, l) => s + (l.ventasTotal || 0),
     0
   );
-  const totalPagado = lotesFiltrados.reduce(
+
+  // 💰 Ventas COBRADAS (lo que ya te pagaron)
+  const totalCobrado = lotesFiltrados.reduce(
     (s, l) => s + (l.ventasPagado || 0),
     0
   );
+
   const totalPorCobrar = lotesFiltrados.reduce(
     (s, l) => s + (l.ventasSaldo || 0),
     0
   );
 
- const gananciaNeta = totalPagado - totalCostos;
+  // ✅ Ganancia neta = cobrado − costos
+  const gananciaNeta = totalCobrado - totalCostos;
 
-// 💡 Valor total de la producción (producidos × valor unitario de cada lote)
-const gananciaAprox = lotesFiltrados.reduce((suma, l) => {
-  const producidos = Number(l.cantidadProducida) || 0;
-  const valorUnitario = Number(l.valorUnitario) || 0;
-  return suma + producidos * valorUnitario;
-}, 0);
-
-const margen =
-  totalVentas > 0 ? ((gananciaAprox / totalVentas) * 100).toFixed(1) : 0;
-
-  const totalProducidos = lotesFiltrados.reduce(
-    (s, l) => s + (l.cantidadProducida || 0),
-    0
-  );
-  const totalVendidos = lotesFiltrados.reduce(
-    (s, l) => s + (l.ventasCantidad || 0),
-    0
-  );
-  const totalPerdidas = lotesFiltrados.reduce(
-    (s, l) => s + (l.perdidas || 0),
-    0
-  );
-
-  const ticketPromedio =
-    ventasFiltradas.length > 0
-      ? Math.round(totalVentas / ventasFiltradas.length)
-      : 0;
+  // 💡 Valor total de la producción (producidos × valor unitario de cada lote)
+  const gananciaAprox = lotesFiltrados.reduce((suma, l) => {
+    const producidos = Number(l.cantidadProducida) || 0;
+    const valorUnitario = Number(l.valorUnitario) || 0;
+    return suma + producidos * valorUnitario;
+  }, 0);
 
   // 🏆 Top lotes
   const topLotes = useMemo(
@@ -243,28 +228,26 @@ const margen =
   );
 
   const formatearFecha = (fecha) => {
-  if (!fecha) return '...';
+    if (!fecha) return '...';
 
-  // Timestamp de Firestore
-  if (fecha.toDate) {
-    return fecha.toDate().toLocaleDateString('es-CO');
-  }
-
-  // String "YYYY-MM-DD" → formatear sin timezone
-  if (typeof fecha === 'string') {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-      const [yyyy, mm, dd] = fecha.split('-');
-      return `${dd}/${mm}/${yyyy}`;
+    if (fecha.toDate) {
+      return fecha.toDate().toLocaleDateString('es-CO');
     }
-    if (fecha.includes('T')) {
-      const [datePart] = fecha.split('T');
-      const [yyyy, mm, dd] = datePart.split('-');
-      return `${dd}/${mm}/${yyyy}`;
-    }
-  }
 
-  return new Date(fecha).toLocaleDateString('es-CO');
-};
+    if (typeof fecha === 'string') {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+        const [yyyy, mm, dd] = fecha.split('-');
+        return `${dd}/${mm}/${yyyy}`;
+      }
+      if (fecha.includes('T')) {
+        const [datePart] = fecha.split('T');
+        const [yyyy, mm, dd] = datePart.split('-');
+        return `${dd}/${mm}/${yyyy}`;
+      }
+    }
+
+    return new Date(fecha).toLocaleDateString('es-CO');
+  };
 
   const abrevUnidad = (unidad) => {
     const mapa = {
@@ -364,7 +347,12 @@ const margen =
               valor={
                 loteSeleccionado === 'todos'
                   ? lotesFiltrados.length
-                  : totalProducidos
+                  : totalVentas > 0
+                  ? lotesFiltrados.reduce(
+                      (s, l) => s + (l.cantidadProducida || 0),
+                      0
+                    )
+                  : 0
               }
               color="chocolate"
             />
@@ -376,8 +364,8 @@ const margen =
             />
             <StatCard
               icon="💰"
-              label="Ventas"
-              valor={`$${totalVentas.toLocaleString('es-CO')}`}
+              label="Ventas cobradas"
+              valor={`$${totalCobrado.toLocaleString('es-CO')}`}
               color="coral"
             />
           </div>
@@ -391,75 +379,16 @@ const margen =
             />
             <StatCard
               icon="✅"
-              label="Ganancia neta"
+              label="Ganancia neta (cobrado − costos)"
               valor={`$${gananciaNeta.toLocaleString('es-CO')}`}
               color={gananciaNeta >= 0 ? 'turquesa' : 'coral'}
             />
-           <StatCard
-  icon="📈"
-  label="Valor total de producción (producidos × precio)"
-  valor={`$${gananciaAprox.toLocaleString('es-CO')}`}
-  color="turquesa"
-/>
-          </div>
-
-          {/* Resumen ejecutivo */}
-          <div className="dashboard-panel">
-            <h3 className="panel-title">📋 Resumen ejecutivo</h3>
-            <div className="resumen-ejecutivo">
-              <div className="ejecutivo-item">
-                <span className="ejecutivo-label">Margen de ganancia</span>
-                <strong
-                  className="ejecutivo-valor"
-                  style={{ color: margen >= 0 ? '#2A9D8F' : '#F26B7A' }}
-                >
-                  {margen}%
-                </strong>
-                <small className="ejecutivo-hint">Sobre ventas</small>
-              </div>
-
-              <div className="ejecutivo-item">
-                <span className="ejecutivo-label">Total producidos</span>
-                <strong
-                  className="ejecutivo-valor"
-                  style={{ color: '#5C3A21' }}
-                >
-                  {totalProducidos}
-                </strong>
-                <small className="ejecutivo-hint">
-                  {totalVendidos} vendidos · {totalPerdidas} pérdidas
-                </small>
-              </div>
-
-              <div className="ejecutivo-item">
-                <span className="ejecutivo-label">Ticket promedio</span>
-                <strong
-                  className="ejecutivo-valor"
-                  style={{ color: '#F26B7A' }}
-                >
-                  ${ticketPromedio.toLocaleString('es-CO')}
-                </strong>
-                <small className="ejecutivo-hint">
-                  {ventasFiltradas.length} pedidos
-                </small>
-              </div>
-
-              <div className="ejecutivo-item">
-                <span className="ejecutivo-label">Eficiencia ventas</span>
-                <strong
-                  className="ejecutivo-valor"
-                  style={{ color: '#2A9D8F' }}
-                >
-                  {totalProducidos > 0
-                    ? ((totalVendidos / totalProducidos) * 100).toFixed(1)
-                    : 0}
-                  %
-                </strong>
-                <small className="ejecutivo-hint">
-                  Vendidos / Producidos
-                </small>
-              </div>
-            </div>
+            <StatCard
+              icon="📈"
+              label="Valor total de producción (producidos × precio)"
+              valor={`$${gananciaAprox.toLocaleString('es-CO')}`}
+              color="turquesa"
+            />
           </div>
 
           {/* Top lotes rentables */}
@@ -691,8 +620,8 @@ const margen =
                             </div>
                           </td>
                           <td>
-  {c.telefono ? `📞 ${c.telefono}` : '—'}
-</td>
+                            {c.telefono ? `📞 ${c.telefono}` : '—'}
+                          </td>
                           <td>{c.pedidos}</td>
                           <td>${c.total.toLocaleString('es-CO')}</td>
                           <td>
@@ -727,17 +656,17 @@ const margen =
                           {c.nombre?.[0]?.toUpperCase() || '?'}
                         </div>
                         <div className="deuda-card-info">
-  <strong>{c.nombre}</strong>
-  {c.telefono ? (
-    <small className="deuda-card-telefono">
-      📞 {c.telefono}
-    </small>
-  ) : (
-    <small style={{ color: '#8B7A66' }}>
-      Sin teléfono
-    </small>
-  )}
-</div>
+                          <strong>{c.nombre}</strong>
+                          {c.telefono ? (
+                            <small className="deuda-card-telefono">
+                              📞 {c.telefono}
+                            </small>
+                          ) : (
+                            <small style={{ color: '#8B7A66' }}>
+                              Sin teléfono
+                            </small>
+                          )}
+                        </div>
                         <span className="deuda-card-pedidos">
                           🛒 {c.pedidos}
                         </span>
@@ -777,24 +706,24 @@ const margen =
                       </div>
 
                       {c.telefono && (
-  <div className="deuda-card-acciones-single">
-    <a
-      href={`https://wa.me/57${c.telefono.replace(
-        /\D/g,
-        ''
-      )}?text=Hola ${encodeURIComponent(
-        c.nombre
-      )}, te recuerdo tu saldo pendiente de $${c.saldo.toLocaleString(
-        'es-CO'
-      )} 🍚`}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="btn-accion-deuda btn-whatsapp"
-    >
-      💬 Enviar WhatsApp
-    </a>
-  </div>
-)}
+                        <div className="deuda-card-acciones-single">
+                          <a
+                            href={`https://wa.me/57${c.telefono.replace(
+                              /\D/g,
+                              ''
+                            )}?text=Hola ${encodeURIComponent(
+                              c.nombre
+                            )}, te recuerdo tu saldo pendiente de $${c.saldo.toLocaleString(
+                              'es-CO'
+                            )} 🍚`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-accion-deuda btn-whatsapp"
+                          >
+                            💬 Enviar WhatsApp
+                          </a>
+                        </div>
+                      )}
                     </div>
                   );
                 })}
@@ -826,7 +755,8 @@ const margen =
                           <th>Vendidos</th>
                           <th>Pérdidas</th>
                           <th>Costos</th>
-                          <th>Ventas</th>
+                          <th>Facturado</th>
+                          <th>Cobrado</th>
                           <th>Ganancia</th>
                           <th>%</th>
                         </tr>
@@ -859,8 +789,13 @@ const margen =
                               </strong>
                             </td>
                             <td>
-                              <strong style={{ color: '#2A9D8F' }}>
+                              <strong style={{ color: '#8B7A66' }}>
                                 ${(l.ventasTotal || 0).toLocaleString('es-CO')}
+                              </strong>
+                            </td>
+                            <td>
+                              <strong style={{ color: '#2A9D8F' }}>
+                                ${(l.ventasPagado || 0).toLocaleString('es-CO')}
                               </strong>
                             </td>
                             <td>
@@ -996,10 +931,18 @@ const margen =
                           </div>
                           <div className="reporte-info-item">
                             <span className="reporte-info-label">
-                              🛒 Ventas
+                              🛒 Facturado
+                            </span>
+                            <strong style={{ color: '#8B7A66' }}>
+                              ${(l.ventasTotal || 0).toLocaleString('es-CO')}
+                            </strong>
+                          </div>
+                          <div className="reporte-info-item">
+                            <span className="reporte-info-label">
+                              ✅ Cobrado
                             </span>
                             <strong style={{ color: '#2A9D8F' }}>
-                              ${(l.ventasTotal || 0).toLocaleString('es-CO')}
+                              ${(l.ventasPagado || 0).toLocaleString('es-CO')}
                             </strong>
                           </div>
                           <div className="reporte-info-item reporte-info-full">

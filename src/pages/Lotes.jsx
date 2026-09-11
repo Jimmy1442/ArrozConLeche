@@ -32,16 +32,13 @@ const UNIDADES = [
    🔥 HELPERS DE FECHA (SIN TIMEZONE)
    ═══════════════════════════════════════════════════════════ */
 
-// 📅 Formatea una fecha para MOSTRAR (ej: "26/07/2026")
 const formatearFecha = (fecha) => {
   if (!fecha) return '...';
 
-  // Timestamp de Firestore
   if (fecha.toDate) {
     return fecha.toDate().toLocaleDateString('es-CO');
   }
 
-  // String "YYYY-MM-DD" → formatear sin timezone
   if (typeof fecha === 'string') {
     if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
       const [yyyy, mm, dd] = fecha.split('-');
@@ -57,11 +54,9 @@ const formatearFecha = (fecha) => {
   return new Date(fecha).toLocaleDateString('es-CO');
 };
 
-// 📅 Formatea una fecha para el INPUT type="date" (ej: "2026-07-26")
 const normalizarFechaInput = (fecha) => {
   if (!fecha) return new Date().toISOString().split('T')[0];
 
-  // Timestamp de Firestore
   if (fecha.toDate) {
     const d = fecha.toDate();
     const yyyy = d.getUTCFullYear();
@@ -70,7 +65,6 @@ const normalizarFechaInput = (fecha) => {
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  // Date de JS
   if (fecha instanceof Date) {
     const yyyy = fecha.getUTCFullYear();
     const mm = String(fecha.getUTCMonth() + 1).padStart(2, '0');
@@ -78,7 +72,6 @@ const normalizarFechaInput = (fecha) => {
     return `${yyyy}-${mm}-${dd}`;
   }
 
-  // String
   if (typeof fecha === 'string') {
     if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) return fecha;
     if (fecha.includes('T')) return fecha.split('T')[0];
@@ -224,7 +217,6 @@ function Lotes({ usuario, onAbrirSidebar }) {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [error, setError] = useState('');
 
-  // ➕ Formulario de creación
   const [nuevo, setNuevo] = useState({
     nombre: '',
     fecha: new Date().toISOString().split('T')[0],
@@ -235,7 +227,6 @@ function Lotes({ usuario, onAbrirSidebar }) {
     ingredientes: []
   });
 
-  // 🧾 Ingrediente temporal (creación)
   const [ingredienteTemp, setIngredienteTemp] = useState({
     nombre: '',
     cantidad: '',
@@ -247,7 +238,6 @@ function Lotes({ usuario, onAbrirSidebar }) {
   const [editando, setEditando] = useState(null);
   const [guardandoEdit, setGuardandoEdit] = useState(false);
 
-  // 🧾 Ingrediente temporal (edición)
   const [ingredienteTempEdit, setIngredienteTempEdit] = useState({
     nombre: '',
     cantidad: '',
@@ -590,7 +580,6 @@ function Lotes({ usuario, onAbrirSidebar }) {
               <h3>Agregar nuevo lote</h3>
 
               <div className="form-grid">
-                {/* DATOS */}
                 <div className="form-seccion-titulo">
                   📝 Datos del lote
                 </div>
@@ -656,7 +645,6 @@ function Lotes({ usuario, onAbrirSidebar }) {
                   />
                 </div>
 
-                {/* INGREDIENTES */}
                 <div className="form-seccion-titulo">
                   🥛 Ingredientes usados
                 </div>
@@ -801,7 +789,6 @@ function Lotes({ usuario, onAbrirSidebar }) {
                   )}
                 </div>
 
-                {/* DISTRIBUCIÓN */}
                 <div className="form-seccion-titulo">
                   📦 Distribución
                 </div>
@@ -864,7 +851,7 @@ function Lotes({ usuario, onAbrirSidebar }) {
             </div>
           )}
 
-          {/* 📋 TABLA (desktop) + CARDS (móvil) — solo si NO está creando */}
+          {/* 📋 TABLA (desktop) + CARDS (móvil) */}
           {!mostrarForm && (
             <div className="dashboard-panel">
               {/* Vista de tabla (PC/Tablet) */}
@@ -885,7 +872,8 @@ function Lotes({ usuario, onAbrirSidebar }) {
                         <th>Producidos</th>
                         <th>Vendidos</th>
                         <th>Pérdidas</th>
-                        <th>Ingresos</th>
+                        <th>Facturado</th>
+                        <th>Cobrado</th>
                         <th>Costos</th>
                         <th>Ganancia</th>
                         <th>Estado</th>
@@ -895,14 +883,14 @@ function Lotes({ usuario, onAbrirSidebar }) {
                     <tbody>
                       {cargando ? (
                         <tr>
-                          <td colSpan="11" style={{ textAlign: 'center', padding: '30px' }}>
+                          <td colSpan="12" style={{ textAlign: 'center', padding: '30px' }}>
                             Cargando lotes... 🍚
                           </td>
                         </tr>
                       ) : lotes.length === 0 ? (
                         <tr>
                           <td
-                            colSpan="11"
+                            colSpan="12"
                             style={{ textAlign: 'center', padding: '40px', color: '#8B7A66' }}
                           >
                             🍚 Aún no hay lotes registrados
@@ -953,12 +941,17 @@ function Lotes({ usuario, onAbrirSidebar }) {
                                 </span>
                               </td>
                               <td>
-                                <strong style={{ color: '#2A9D8F' }}>
+                                <strong style={{ color: '#8B7A66' }}>
                                   ${(v.total || 0).toLocaleString('es-CO')}
+                                </strong>
+                              </td>
+                              <td>
+                                <strong style={{ color: '#2A9D8F' }}>
+                                  ${(v.pagado || 0).toLocaleString('es-CO')}
                                 </strong>
                                 {v.saldo > 0 && (
                                   <small style={{ display: 'block', color: '#F26B7A' }}>
-                                    por cobrar ${v.saldo.toLocaleString('es-CO')}
+                                    debe ${v.saldo.toLocaleString('es-CO')}
                                   </small>
                                 )}
                               </td>
@@ -1106,9 +1099,15 @@ function Lotes({ usuario, onAbrirSidebar }) {
                               <strong style={{ color: '#F26B7A' }}>{l.perdidas || 0}</strong>
                             </div>
                             <div className="lote-info-item">
-                              <span className="lote-info-label">🛒 Ingresos</span>
-                              <strong style={{ color: '#2A9D8F' }}>
+                              <span className="lote-info-label">🛒 Facturado</span>
+                              <strong style={{ color: '#8B7A66' }}>
                                 ${(v.total || 0).toLocaleString('es-CO')}
+                              </strong>
+                            </div>
+                            <div className="lote-info-item">
+                              <span className="lote-info-label">✅ Cobrado</span>
+                              <strong style={{ color: '#2A9D8F' }}>
+                                ${(v.pagado || 0).toLocaleString('es-CO')}
                               </strong>
                             </div>
                             <div className="lote-info-item lote-info-full">
@@ -1210,7 +1209,6 @@ function Lotes({ usuario, onAbrirSidebar }) {
             </div>
 
             <div className="modal-body modal-body-custom">
-              {/* SECCIÓN 1: DATOS BÁSICOS */}
               <section className="modal-seccion">
                 <h4 className="modal-seccion-titulo">
                   <span>📝 Datos del lote</span>
@@ -1285,7 +1283,6 @@ function Lotes({ usuario, onAbrirSidebar }) {
                 </div>
               </section>
 
-              {/* SECCIÓN 2: INGREDIENTES */}
               <section className="modal-seccion">
                 <h4 className="modal-seccion-titulo">
                   <span>🥛 Ingredientes usados</span>
@@ -1431,7 +1428,6 @@ function Lotes({ usuario, onAbrirSidebar }) {
                 </div>
               </section>
 
-              {/* SECCIÓN 3: DISTRIBUCIÓN */}
               <section className="modal-seccion">
                 <h4 className="modal-seccion-titulo">
                   <span>📦 Distribución</span>
@@ -1500,13 +1496,13 @@ function Lotes({ usuario, onAbrirSidebar }) {
                 </div>
               </section>
 
-              {/* SECCIÓN 4: RESUMEN FINANCIERO */}
+              {/* SECCIÓN 4: RESUMEN FINANCIERO CON 4 TARJETAS */}
               <section className="modal-seccion">
                 <h4 className="modal-seccion-titulo">
                   <span>💰 Resumen financiero</span>
                 </h4>
                 <div className="modal-seccion-content">
-                  <div className="resumen-financiero">
+                  <div className="resumen-financiero resumen-financiero-4">
                     <div className="resumen-fin-card">
                       <span className="resumen-fin-label">Costos</span>
                       <strong
@@ -1517,12 +1513,21 @@ function Lotes({ usuario, onAbrirSidebar }) {
                       </strong>
                     </div>
                     <div className="resumen-fin-card">
-                      <span className="resumen-fin-label">Ingresos</span>
+                      <span className="resumen-fin-label">Facturado</span>
+                      <strong
+                        className="resumen-fin-valor"
+                        style={{ color: '#8B7A66' }}
+                      >
+                        ${ventasEdit.total.toLocaleString('es-CO')}
+                      </strong>
+                    </div>
+                    <div className="resumen-fin-card">
+                      <span className="resumen-fin-label">Cobrado</span>
                       <strong
                         className="resumen-fin-valor"
                         style={{ color: '#2A9D8F' }}
                       >
-                        +${ventasEdit.total.toLocaleString('es-CO')}
+                        +${ventasEdit.pagado.toLocaleString('es-CO')}
                       </strong>
                     </div>
                     <div className="resumen-fin-card resumen-fin-total">

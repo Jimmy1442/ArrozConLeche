@@ -1132,3 +1132,60 @@
     font-size: 15px;
   }
 }
+/* ═══════════════════════════════════════════
+   TABLA DE LOTES - ANCHOS OPTIMIZADOS
+   ═══════════════════════════════════════════ */
+.tabla-lotes-desktop .data-table {
+  min-width: 1200px;
+}
+
+/* Anchos específicos por columna */
+.tabla-lotes-desktop .data-table th:nth-child(1),
+.tabla-lotes-desktop .data-table td:nth-child(1) {
+  width: 45px;
+  padding-left: 12px;
+}
+
+.tabla-lotes-desktop .data-table th:nth-child(2),
+.tabla-lotes-desktop .data-table td:nth-child(2) {
+  width: 100px;
+}
+
+.tabla-lotes-desktop .data-table th:nth-child(3),
+.tabla-lotes-desktop .data-table td:nth-child(3) {
+  width: 170px;
+}
+
+.tabla-lotes-desktop .data-table th:nth-child(4),
+.tabla-lotes-desktop .data-table td:nth-child(4),
+.tabla-lotes-desktop .data-table th:nth-child(5),
+.tabla-lotes-desktop .data-table td:nth-child(5),
+.tabla-lotes-desktop .data-table th:nth-child(6),
+.tabla-lotes-desktop .data-table td:nth-child(6) {
+  width: 90px;
+  text-align: center;
+}
+
+.tabla-lotes-desktop .data-table th:nth-child(7),
+.tabla-lotes-desktop .data-table td:nth-child(7),
+.tabla-lotes-desktop .data-table th:nth-child(8),
+.tabla-lotes-desktop .data-table td:nth-child(8),
+.tabla-lotes-desktop .data-table th:nth-child(9),
+.tabla-lotes-desktop .data-table td:nth-child(9),
+.tabla-lotes-desktop .data-table th:nth-child(10),
+.tabla-lotes-desktop .data-table td:nth-child(10) {
+  width: 120px;
+  text-align: right;
+}
+
+.tabla-lotes-desktop .data-table th:nth-child(11),
+.tabla-lotes-desktop .data-table td:nth-child(11) {
+  width: 100px;
+  text-align: center;
+}
+
+.tabla-lotes-desktop .data-table th:nth-child(12),
+.tabla-lotes-desktop .data-table td:nth-child(12) {
+  width: 100px;
+  text-align: center;
+}

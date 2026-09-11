@@ -93,11 +93,13 @@ function Dashboard({ usuario, onAbrirSidebar }) {
 
   // 💰 TOTALES HISTÓRICOS
   const totalCostos = lotes.reduce((s, l) => s + (l.costoTotal || 0), 0);
-  const totalVentas = ventas.reduce((s, v) => s + (v.total || 0), 0);
+
+  // 💰 Ventas cobradas (solo el dinero que YA te pagaron)
+  const totalVentas = ventas.reduce((s, v) => s + (v.pagado || 0), 0);
   const totalPagado = ventas.reduce((s, v) => s + (v.pagado || 0), 0);
   const totalPorCobrar = ventas.reduce((s, v) => s + (v.saldo || 0), 0);
 
-  // 💡 GANANCIA NETA: dinero realmente cobrado - costos de lotes con ventas
+  // 💡 GANANCIA NETA: dinero realmente cobrado − costos de lotes con ventas
   const lotesConVentas = lotes.filter((l) => {
     const v = getVentasLote(l.id);
     return v.pedidos > 0;
@@ -108,15 +110,14 @@ function Dashboard({ usuario, onAbrirSidebar }) {
   );
   const gananciaNeta = totalPagado - costosLotesConVentas;
 
-  // 💡 GANANCIA APROXIMADA = Total producido × valor unitario de cada lote
-// (Valor total de la producción si se vende todo)
-const gananciaAproximada = lotes.reduce((suma, l) => {
-  const producidos = Number(l.cantidadProducida) || 0;
-  const valorUnitario = Number(l.valorUnitario) || 0;
-  return suma + (producidos * valorUnitario);
-}, 0);
+  // 💡 VALOR TOTAL DE PRODUCCIÓN = producidos × valor unitario de cada lote
+  const gananciaAproximada = lotes.reduce((suma, l) => {
+    const producidos = Number(l.cantidadProducida) || 0;
+    const valorUnitario = Number(l.valorUnitario) || 0;
+    return suma + producidos * valorUnitario;
+  }, 0);
 
-  // 🏆 Top clientes (con unidades vendidas)
+  // 🏆 Top clientes
   const topClientes = Object.values(
     ventas.reduce((acc, v) => {
       const key = v.clienteId || v.clienteNombre;
@@ -157,29 +158,28 @@ const gananciaAproximada = lotes.reduce((suma, l) => {
     .sort((a, b) => b.ganancia - a.ganancia)
     .slice(0, 5);
 
+  // 📅 Formatear fecha sin problema de timezone
   const formatearFecha = (fecha) => {
-  if (!fecha) return '...';
+    if (!fecha) return '...';
 
-  // Timestamp de Firestore
-  if (fecha.toDate) {
-    return fecha.toDate().toLocaleDateString('es-CO');
-  }
-
-  // String "YYYY-MM-DD" → formatear sin timezone
-  if (typeof fecha === 'string') {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
-      const [yyyy, mm, dd] = fecha.split('-');
-      return `${dd}/${mm}/${yyyy}`;
+    if (fecha.toDate) {
+      return fecha.toDate().toLocaleDateString('es-CO');
     }
-    if (fecha.includes('T')) {
-      const [datePart] = fecha.split('T');
-      const [yyyy, mm, dd] = datePart.split('-');
-      return `${dd}/${mm}/${yyyy}`;
-    }
-  }
 
-  return new Date(fecha).toLocaleDateString('es-CO');
-};
+    if (typeof fecha === 'string') {
+      if (/^\d{4}-\d{2}-\d{2}$/.test(fecha)) {
+        const [yyyy, mm, dd] = fecha.split('-');
+        return `${dd}/${mm}/${yyyy}`;
+      }
+      if (fecha.includes('T')) {
+        const [datePart] = fecha.split('T');
+        const [yyyy, mm, dd] = datePart.split('-');
+        return `${dd}/${mm}/${yyyy}`;
+      }
+    }
+
+    return new Date(fecha).toLocaleDateString('es-CO');
+  };
 
   // 📊 Progreso del lote activo
   const progresoVentas = loteActivo
@@ -320,15 +320,15 @@ const gananciaAproximada = lotes.reduce((suma, l) => {
                   </strong>
                 </div>
 
-                <div className="lote-stat lote-stat-money">
-                  <span className="lote-stat-label">💰 Ingresos</span>
-                  <strong
-                    className="lote-stat-valor"
-                    style={{ color: '#2A9D8F' }}
-                  >
-                    ${(ventasActivo?.total || 0).toLocaleString('es-CO')}
-                  </strong>
-                </div>
+               <div className="lote-stat lote-stat-money">
+  <span className="lote-stat-label">💰 Cobrado</span>
+  <strong
+    className="lote-stat-valor"
+    style={{ color: '#2A9D8F' }}
+  >
+    ${(ventasActivo?.pagado || 0).toLocaleString('es-CO')}
+  </strong>
+</div>
                 <div className="lote-stat lote-stat-money">
                   <span className="lote-stat-label">🥛 Costos</span>
                   <strong
@@ -378,7 +378,7 @@ const gananciaAproximada = lotes.reduce((suma, l) => {
             />
             <StatCard
               icon="💰"
-              label="Ventas totales"
+              label="Ventas cobradas"
               valor={`$${totalVentas.toLocaleString('es-CO')}`}
               color="coral"
             />
@@ -398,11 +398,11 @@ const gananciaAproximada = lotes.reduce((suma, l) => {
               color={gananciaNeta >= 0 ? 'turquesa' : 'coral'}
             />
             <StatCard
-  icon="📈"
-  label="Valor total de producción (producidos × precio)"
-  valor={`$${gananciaAproximada.toLocaleString('es-CO')}`}
-  color="turquesa"
-/>
+              icon="📈"
+              label="Valor total de producción (producidos × precio)"
+              valor={`$${gananciaAproximada.toLocaleString('es-CO')}`}
+              color="turquesa"
+            />
           </div>
 
           {/* 🏆 TOP LOTES + 👥 TOP CLIENTES */}
