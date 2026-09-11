@@ -15,6 +15,7 @@ function Reportes({ usuario, onAbrirSidebar }) {
   const [lotes, setLotes] = useState([]);
   const [ventas, setVentas] = useState([]);
   const [clientes, setClientes] = useState([]);
+  const [gastos, setGastos] = useState([]);
   const [cargando, setCargando] = useState(true);
 
   // 🎛️ Filtros
@@ -46,10 +47,21 @@ function Reportes({ usuario, onAbrirSidebar }) {
       setClientes(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
 
+    // 👇 NUEVO: Cargar gastos
+    const qGastos = query(
+      collection(db, 'gastos'),
+      orderBy('fecha', 'desc'),
+      limit(1000)
+    );
+    const unsubGastos = onSnapshot(qGastos, (snap) => {
+      setGastos(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+
     return () => {
       unsubLotes();
       unsubVentas();
       unsubClientes();
+      unsubGastos();
     };
   }, []);
 
@@ -85,13 +97,49 @@ function Reportes({ usuario, onAbrirSidebar }) {
       pedidos: 0
     };
 
-  // 📊 Lotes con sus ventas calculadas
+  // 🗂️ Gastos agrupados por loteId
+  const gastosPorLote = useMemo(() => {
+    const mapa = {};
+    gastos.forEach((g) => {
+      if (!g.loteId) return;
+      if (!mapa[g.loteId]) {
+        mapa[g.loteId] = {
+          total: 0,
+          cantidad: 0,
+          porConcepto: {}
+        };
+      }
+      mapa[g.loteId].total += Number(g.valor) || 0;
+      mapa[g.loteId].cantidad += 1;
+
+      const concepto = g.concepto || 'Otros';
+      if (!mapa[g.loteId].porConcepto[concepto]) {
+        mapa[g.loteId].porConcepto[concepto] = 0;
+      }
+      mapa[g.loteId].porConcepto[concepto] += Number(g.valor) || 0;
+    });
+    return mapa;
+  }, [gastos]);
+
+  const getGastosLote = (loteId) =>
+    gastosPorLote[loteId] || { total: 0, cantidad: 0, porConcepto: {} };
+
+  // 📊 Lotes con sus ventas, gastos y total real calculados
   const lotesConDatos = useMemo(() => {
     return lotes.map((l) => {
       const v = getVentasLote(l.id);
-      const ganancia = v.total - (l.costoTotal || 0);
+      const gastosLote = getGastosLote(l.id);
+
+      // 💰 Fórmula total real = Cobrado + Base − Gastos − Costos ingredientes
+      const base = Number(l.base) || 0;
+      const costosIngredientes = Number(l.costoTotal) || 0;
+      const totalReal = v.pagado + base - gastosLote.total - costosIngredientes;
+
+      // Ganancia sobre facturado (para el ranking)
+      const ganancia = v.total - costosIngredientes;
       const margen =
         v.total > 0 ? ((ganancia / v.total) * 100).toFixed(1) : '0.0';
+
       return {
         ...l,
         ventasCantidad: v.cantidad,
@@ -99,11 +147,27 @@ function Reportes({ usuario, onAbrirSidebar }) {
         ventasPagado: v.pagado,
         ventasSaldo: v.saldo,
         ventasPedidos: v.pedidos,
+
+        // 💵 Base
+        base,
+
+        // 🗂️ Gastos
+        gastosTotal: gastosLote.total,
+        gastosCantidad: gastosLote.cantidad,
+        gastosPorConcepto: gastosLote.porConcepto,
+
+        // 🥛 Costos
+        costosIngredientes,
+
+        // 💰 Total real
+        totalReal,
+
+        // Otros
         ganancia,
         margen
       };
     });
-  }, [lotes, ventasPorLote]);
+  }, [lotes, ventasPorLote, gastosPorLote]);
 
   // 🎯 Aplicar filtros
   const lotesFiltrados = useMemo(() => {
@@ -114,9 +178,9 @@ function Reportes({ usuario, onAbrirSidebar }) {
     }
 
     if (filtroEstado === 'rentables') {
-      resultado = resultado.filter((l) => l.ganancia >= 0);
+      resultado = resultado.filter((l) => l.totalReal >= 0);
     } else if (filtroEstado === 'perdida') {
-      resultado = resultado.filter((l) => l.ganancia < 0);
+      resultado = resultado.filter((l) => l.totalReal < 0);
     }
 
     return resultado;
@@ -133,37 +197,40 @@ function Reportes({ usuario, onAbrirSidebar }) {
     (s, l) => s + (l.costoTotal || 0),
     0
   );
-
-  // 💰 Ventas FACTURADAS (lo que se vendió, aunque no esté cobrado)
+  const totalBase = lotesFiltrados.reduce((s, l) => s + (l.base || 0), 0);
+  const totalGastos = lotesFiltrados.reduce(
+    (s, l) => s + (l.gastosTotal || 0),
+    0
+  );
   const totalVentas = lotesFiltrados.reduce(
     (s, l) => s + (l.ventasTotal || 0),
     0
   );
-
-  // 💰 Ventas COBRADAS (lo que ya te pagaron)
   const totalCobrado = lotesFiltrados.reduce(
     (s, l) => s + (l.ventasPagado || 0),
     0
   );
-
   const totalPorCobrar = lotesFiltrados.reduce(
     (s, l) => s + (l.ventasSaldo || 0),
     0
   );
 
-  // ✅ Ganancia neta = cobrado − costos
-  const gananciaNeta = totalCobrado - totalCostos;
+  // 💰 Total real del negocio = suma de totales reales de cada lote
+  const totalRealNegocio = lotesFiltrados.reduce(
+    (s, l) => s + (l.totalReal || 0),
+    0
+  );
 
-  // 💡 Valor total de la producción (producidos × valor unitario de cada lote)
-  const gananciaAprox = lotesFiltrados.reduce((suma, l) => {
+  // 💡 Valor total de la producción
+  const valorProduccion = lotesFiltrados.reduce((suma, l) => {
     const producidos = Number(l.cantidadProducida) || 0;
     const valorUnitario = Number(l.valorUnitario) || 0;
     return suma + producidos * valorUnitario;
   }, 0);
 
-  // 🏆 Top lotes
+  // 🏆 Top lotes (por total real)
   const topLotes = useMemo(
-    () => [...lotesFiltrados].sort((a, b) => b.ganancia - a.ganancia),
+    () => [...lotesFiltrados].sort((a, b) => b.totalReal - a.totalReal),
     [lotesFiltrados]
   );
 
@@ -196,29 +263,29 @@ function Reportes({ usuario, onAbrirSidebar }) {
   const maxIngrediente = topIngredientes[0]?.total || 1;
 
   // 👥 Top clientes
- const topClientes = useMemo(() => {
-  const mapa = {};
-  ventasFiltradas.forEach((v) => {
-    const key = v.clienteId || v.clienteNombre;
-    if (!mapa[key]) {
-      mapa[key] = {
-        nombre: v.clienteNombre,
-        telefono: v.clienteTelefono,
-        total: 0,
-        pagado: 0,
-        saldo: 0,
-        pedidos: 0,
-        unidades: 0        // 👈 NUEVO
-      };
-    }
-    mapa[key].total += v.total || 0;
-    mapa[key].pagado += v.pagado || 0;
-    mapa[key].saldo += v.saldo || 0;
-    mapa[key].pedidos += 1;
-    mapa[key].unidades += Number(v.cantidad) || 0;  // 👈 NUEVO
-  });
-  return Object.values(mapa).sort((a, b) => b.total - a.total);
-}, [ventasFiltradas]);
+  const topClientes = useMemo(() => {
+    const mapa = {};
+    ventasFiltradas.forEach((v) => {
+      const key = v.clienteId || v.clienteNombre;
+      if (!mapa[key]) {
+        mapa[key] = {
+          nombre: v.clienteNombre,
+          telefono: v.clienteTelefono,
+          total: 0,
+          pagado: 0,
+          saldo: 0,
+          pedidos: 0,
+          unidades: 0
+        };
+      }
+      mapa[key].total += v.total || 0;
+      mapa[key].pagado += v.pagado || 0;
+      mapa[key].saldo += v.saldo || 0;
+      mapa[key].pedidos += 1;
+      mapa[key].unidades += Number(v.cantidad) || 0;
+    });
+    return Object.values(mapa).sort((a, b) => b.total - a.total);
+  }, [ventasFiltradas]);
 
   const clientesConDeuda = topClientes.filter((c) => c.saldo > 0).slice(0, 5);
 
@@ -337,7 +404,7 @@ function Reportes({ usuario, onAbrirSidebar }) {
             </div>
           )}
 
-          {/* Tarjetas principales */}
+          {/* Tarjetas principales - FILA 1 */}
           <div className="stats-grid stats-grid-3">
             <StatCard
               icon="🍚"
@@ -349,48 +416,67 @@ function Reportes({ usuario, onAbrirSidebar }) {
               valor={
                 loteSeleccionado === 'todos'
                   ? lotesFiltrados.length
-                  : totalVentas > 0
-                  ? lotesFiltrados.reduce(
+                  : lotesFiltrados.reduce(
                       (s, l) => s + (l.cantidadProducida || 0),
                       0
                     )
-                  : 0
               }
               color="chocolate"
             />
             <StatCard
               icon="🥛"
-              label="Costos"
+              label="Costos ingredientes"
               valor={`$${totalCostos.toLocaleString('es-CO')}`}
               color="chocolate"
             />
             <StatCard
-              icon="💰"
-              label="Ventas cobradas"
-              valor={`$${totalCobrado.toLocaleString('es-CO')}`}
+              icon="🗂️"
+              label="Gastos externos"
+              valor={`$${totalGastos.toLocaleString('es-CO')}`}
               color="coral"
             />
           </div>
 
+          {/* Tarjetas principales - FILA 2 */}
           <div className="stats-grid stats-grid-3">
+            <StatCard
+              icon="✅"
+              label="Ventas cobradas"
+              valor={`$${totalCobrado.toLocaleString('es-CO')}`}
+              color="turquesa"
+            />
+            <StatCard
+              icon="💵"
+              label="Base total"
+              valor={`$${totalBase.toLocaleString('es-CO')}`}
+              color="turquesa"
+            />
             <StatCard
               icon="⏳"
               label="Por cobrar"
               valor={`$${totalPorCobrar.toLocaleString('es-CO')}`}
               color="amarillo"
             />
-            <StatCard
-              icon="✅"
-              label="Ganancia neta (cobrado − costos)"
-              valor={`$${gananciaNeta.toLocaleString('es-CO')}`}
-              color={gananciaNeta >= 0 ? 'turquesa' : 'coral'}
-            />
-            <StatCard
-              icon="📈"
-              label="Valor total de producción (producidos × precio)"
-              valor={`$${gananciaAprox.toLocaleString('es-CO')}`}
-              color="turquesa"
-            />
+          </div>
+
+          {/* Tarjeta grande: Total Real del Negocio */}
+          <div className="total-real-destacado">
+            <div className="total-real-info">
+              <span className="total-real-label">
+                💰 Total real del negocio
+              </span>
+              <small>
+                Cobrado + Base − Gastos − Costos ingredientes
+              </small>
+            </div>
+            <strong
+              className="total-real-valor"
+              style={{
+                color: totalRealNegocio >= 0 ? '#2A9D8F' : '#F26B7A'
+              }}
+            >
+              ${totalRealNegocio.toLocaleString('es-CO')}
+            </strong>
           </div>
 
           {/* Top lotes rentables */}
@@ -428,10 +514,10 @@ function Reportes({ usuario, onAbrirSidebar }) {
                     <div className="ranking-montos">
                       <strong
                         style={{
-                          color: l.ganancia >= 0 ? '#2A9D8F' : '#F26B7A'
+                          color: l.totalReal >= 0 ? '#2A9D8F' : '#F26B7A'
                         }}
                       >
-                        ${l.ganancia.toLocaleString('es-CO')}
+                        ${l.totalReal.toLocaleString('es-CO')}
                       </strong>
                       <small
                         style={{
@@ -441,28 +527,7 @@ function Reportes({ usuario, onAbrirSidebar }) {
                         }}
                       >
                         <span>
-                          ventas ${(l.ventasTotal || 0).toLocaleString('es-CO')}
-                        </span>
-                        <span
-                          style={{
-                            background:
-                              Number(l.margen) >= 30
-                                ? '#D3F5E0'
-                                : Number(l.margen) >= 0
-                                ? '#FFF3C4'
-                                : '#FFD3D3',
-                            color:
-                              Number(l.margen) >= 30
-                                ? '#1E7A4C'
-                                : Number(l.margen) >= 0
-                                ? '#9C7A00'
-                                : '#9C1E1E',
-                            padding: '1px 6px',
-                            borderRadius: 8,
-                            fontWeight: 700
-                          }}
-                        >
-                          {l.margen}%
+                          cobrado ${(l.ventasPagado || 0).toLocaleString('es-CO')}
                         </span>
                       </small>
                     </div>
@@ -561,14 +626,16 @@ function Reportes({ usuario, onAbrirSidebar }) {
                       >
                         #{i + 1}
                       </div>
-                     <div className="ranking-info">
-  <strong>{c.nombre}</strong>
-  <small>
-    {c.pedidos} pedido{c.pedidos !== 1 ? 's' : ''} ·{' '}
-    <strong style={{ color: '#2A9D8F' }}>{c.unidades}</strong>{' '}
-    unidades
-  </small>
-</div>
+                      <div className="ranking-info">
+                        <strong>{c.nombre}</strong>
+                        <small>
+                          {c.pedidos} pedido{c.pedidos !== 1 ? 's' : ''} ·{' '}
+                          <strong style={{ color: '#2A9D8F' }}>
+                            {c.unidades}
+                          </strong>{' '}
+                          unidades
+                        </small>
+                      </div>
                       <div className="ranking-montos">
                         <strong style={{ color: '#F26B7A' }}>
                           ${c.total.toLocaleString('es-CO')}
@@ -760,7 +827,9 @@ function Reportes({ usuario, onAbrirSidebar }) {
                           <th>Costos</th>
                           <th>Facturado</th>
                           <th>Cobrado</th>
-                          <th>Ganancia</th>
+                          <th>Base</th>
+                          <th>Gastos</th>
+                          <th>Total Real</th>
                           <th>%</th>
                         </tr>
                       </thead>
@@ -802,13 +871,23 @@ function Reportes({ usuario, onAbrirSidebar }) {
                               </strong>
                             </td>
                             <td>
+                              <strong style={{ color: '#3DC5B8' }}>
+                                ${(l.base || 0).toLocaleString('es-CO')}
+                              </strong>
+                            </td>
+                            <td>
+                              <strong style={{ color: '#F26B7A' }}>
+                                ${(l.gastosTotal || 0).toLocaleString('es-CO')}
+                              </strong>
+                            </td>
+                            <td>
                               <strong
                                 style={{
                                   color:
-                                    l.ganancia >= 0 ? '#2A9D8F' : '#F26B7A'
+                                    l.totalReal >= 0 ? '#2A9D8F' : '#F26B7A'
                                 }}
                               >
-                                ${l.ganancia.toLocaleString('es-CO')}
+                                ${l.totalReal.toLocaleString('es-CO')}
                               </strong>
                             </td>
                             <td>
@@ -857,7 +936,7 @@ function Reportes({ usuario, onAbrirSidebar }) {
                 {/* Vista de cards (móvil) */}
                 <div className="cards-reportes-mobile">
                   {lotesFiltrados.slice(0, 30).map((l) => {
-                    const esRentable = l.ganancia >= 0;
+                    const esRentable = l.totalReal >= 0;
                     const margenNum = Number(l.margen);
 
                     return (
@@ -902,44 +981,14 @@ function Reportes({ usuario, onAbrirSidebar }) {
                           }`}
                         >
                           <span className="reporte-ganancia-label">
-                            {esRentable ? '💰 Ganancia' : '📉 Pérdida'}
+                            {esRentable ? '💰 Total real' : '📉 En pérdida'}
                           </span>
                           <strong className="reporte-ganancia-valor">
-                            ${Math.abs(l.ganancia).toLocaleString('es-CO')}
+                            ${Math.abs(l.totalReal).toLocaleString('es-CO')}
                           </strong>
                         </div>
 
                         <div className="reporte-card-info-grid">
-                          <div className="reporte-info-item">
-                            <span className="reporte-info-label">
-                              🍚 Producidos
-                            </span>
-                            <strong>{l.cantidadProducida}</strong>
-                          </div>
-                          <div className="reporte-info-item">
-                            <span className="reporte-info-label">
-                              ✅ Vendidos
-                            </span>
-                            <strong style={{ color: '#2A9D8F' }}>
-                              {l.ventasCantidad}
-                            </strong>
-                          </div>
-                          <div className="reporte-info-item">
-                            <span className="reporte-info-label">
-                              ➖ Pérdidas
-                            </span>
-                            <strong style={{ color: '#F26B7A' }}>
-                              {l.perdidas || 0}
-                            </strong>
-                          </div>
-                          <div className="reporte-info-item">
-                            <span className="reporte-info-label">
-                              🛒 Facturado
-                            </span>
-                            <strong style={{ color: '#8B7A66' }}>
-                              ${(l.ventasTotal || 0).toLocaleString('es-CO')}
-                            </strong>
-                          </div>
                           <div className="reporte-info-item">
                             <span className="reporte-info-label">
                               ✅ Cobrado
@@ -948,7 +997,21 @@ function Reportes({ usuario, onAbrirSidebar }) {
                               ${(l.ventasPagado || 0).toLocaleString('es-CO')}
                             </strong>
                           </div>
-                          <div className="reporte-info-item reporte-info-full">
+                          <div className="reporte-info-item">
+                            <span className="reporte-info-label">💵 Base</span>
+                            <strong style={{ color: '#3DC5B8' }}>
+                              ${(l.base || 0).toLocaleString('es-CO')}
+                            </strong>
+                          </div>
+                          <div className="reporte-info-item">
+                            <span className="reporte-info-label">
+                              🗂️ Gastos
+                            </span>
+                            <strong style={{ color: '#F26B7A' }}>
+                              ${(l.gastosTotal || 0).toLocaleString('es-CO')}
+                            </strong>
+                          </div>
+                          <div className="reporte-info-item">
                             <span className="reporte-info-label">
                               🥛 Costos
                             </span>
@@ -957,33 +1020,6 @@ function Reportes({ usuario, onAbrirSidebar }) {
                             </strong>
                           </div>
                         </div>
-
-                        {l.cantidadProducida > 0 && (
-                          <div className="reporte-card-progreso">
-                            <div className="reporte-progreso-header">
-                              <span>Vendidos</span>
-                              <strong>
-                                {(
-                                  (l.ventasCantidad / l.cantidadProducida) *
-                                  100
-                                ).toFixed(0)}
-                                %
-                              </strong>
-                            </div>
-                            <div className="reporte-progreso-track">
-                              <div
-                                className="reporte-progreso-fill"
-                                style={{
-                                  width: `${Math.min(
-                                    100,
-                                    (l.ventasCantidad / l.cantidadProducida) *
-                                      100
-                                  )}%`
-                                }}
-                              />
-                            </div>
-                          </div>
-                        )}
                       </div>
                     );
                   })}
@@ -1002,6 +1038,143 @@ function Reportes({ usuario, onAbrirSidebar }) {
                   )}
                 </div>
               </>
+            )}
+          </div>
+
+          {/* 📊 RESUMEN FINANCIERO POR LOTE */}
+          <div className="dashboard-panel">
+            <h3 className="panel-title">
+              📊 Resumen financiero por lote ({lotesFiltrados.length})
+            </h3>
+
+            {lotesFiltrados.length === 0 ? (
+              <p className="panel-vacio">
+                Sin lotes que coincidan con los filtros.
+              </p>
+            ) : (
+              <div className="resumen-lotes-lista">
+                {lotesFiltrados.map((l) => {
+                  const conceptos = Object.entries(l.gastosPorConcepto || {});
+                  const totalReal = l.totalReal;
+                  const esPositivo = totalReal >= 0;
+
+                  return (
+                    <div
+                      key={l.id}
+                      className={`resumen-lote-card ${
+                        esPositivo ? 'resumen-positivo' : 'resumen-negativo'
+                      }`}
+                    >
+                      {/* Header */}
+                      <div className="resumen-lote-header">
+                        <div className="resumen-lote-info">
+                          <strong>🍚 {l.nombre}</strong>
+                          <small>
+                            📅 {formatearFecha(l.fecha)} · {l.cantidadProducida}{' '}
+                            producidos · {l.ventasCantidad} vendidos ·{' '}
+                            {l.perdidas || 0} pérdidas
+                          </small>
+                        </div>
+                        <div className="resumen-lote-total">
+                          <span>💰 Total real</span>
+                          <strong
+                            style={{ color: esPositivo ? '#2A9D8F' : '#F26B7A' }}
+                          >
+                            ${totalReal.toLocaleString('es-CO')}
+                          </strong>
+                        </div>
+                      </div>
+
+                      {/* Desglose */}
+                      <div className="resumen-lote-desglose">
+                        <div className="desglose-item">
+                          <span className="desglose-label">✅ Cobrado</span>
+                          <strong
+                            className="desglose-valor"
+                            style={{ color: '#2A9D8F' }}
+                          >
+                            +${l.ventasPagado.toLocaleString('es-CO')}
+                          </strong>
+                        </div>
+                        <div className="desglose-item">
+                          <span className="desglose-label">💵 Base</span>
+                          <strong
+                            className="desglose-valor"
+                            style={{ color: '#3DC5B8' }}
+                          >
+                            +${l.base.toLocaleString('es-CO')}
+                          </strong>
+                        </div>
+                        <div className="desglose-item">
+                          <span className="desglose-label">
+                            🗂️ Gastos ({l.gastosCantidad})
+                          </span>
+                          <strong
+                            className="desglose-valor"
+                            style={{ color: '#F26B7A' }}
+                          >
+                            -${l.gastosTotal.toLocaleString('es-CO')}
+                          </strong>
+                        </div>
+                        <div className="desglose-item">
+                          <span className="desglose-label">
+                            🥛 Costos ingredientes
+                          </span>
+                          <strong
+                            className="desglose-valor"
+                            style={{ color: '#F26B7A' }}
+                          >
+                            -${l.costosIngredientes.toLocaleString('es-CO')}
+                          </strong>
+                        </div>
+                      </div>
+
+                      {/* Detalle de gastos por concepto */}
+                      {conceptos.length > 0 && (
+                        <div className="resumen-lote-gastos">
+                          <div className="gastos-titulo">
+                            🏷️ Gastos por concepto
+                          </div>
+                          <div className="gastos-lista">
+                            {conceptos.map(([concepto, valor]) => (
+                              <div key={concepto} className="gasto-item">
+                                <span className="gasto-concepto">
+                                  {concepto}
+                                </span>
+                                <span className="gasto-valor">
+                                  ${valor.toLocaleString('es-CO')}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Info extra */}
+                      {(l.ventasSaldo > 0 || l.ventasTotal > 0) && (
+                        <div className="resumen-lote-extra">
+                          {l.ventasTotal > 0 && (
+                            <span>
+                              📊 Facturado:{' '}
+                              <strong>
+                                ${l.ventasTotal.toLocaleString('es-CO')}
+                              </strong>
+                            </span>
+                          )}
+                          {l.ventasSaldo > 0 && (
+                            <span style={{ color: '#9C7A00' }}>
+                              ⏳ Por cobrar:{' '}
+                              <strong>
+                                ${l.ventasSaldo.toLocaleString('es-CO')}
+                              </strong>
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </div>
         </div>
