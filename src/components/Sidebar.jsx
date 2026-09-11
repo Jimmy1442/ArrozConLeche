@@ -7,6 +7,7 @@ const menuItems = [
   { path: '/ventas',    label: 'Ventas',    icon: '💰' },
   { path: '/clientes',  label: 'Clientes',  icon: '👥' },
   { path: '/lotes',     label: 'Lotes',     icon: '🍚' },
+   { path: '/gastos',    label: 'Gastos',    icon: '🗂️' },  // 👈 NUEVO
   { path: '/reportes',  label: 'Reportes',  icon: '📊' }
 ];
 

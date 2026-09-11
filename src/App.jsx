@@ -9,6 +9,7 @@ import Ventas from './pages/Ventas';
 import Clientes from './pages/Clientes';
 import Reportes from './pages/Reportes';
 import Lotes from './pages/Lotes';
+import Gastos from './pages/Gastos';
 
 function App() {
   const [usuario, setUsuario] = useState(null);
@@ -75,6 +76,15 @@ function App() {
           path="/lotes"
           element={
             <Lotes
+              usuario={usuario}
+              onAbrirSidebar={() => setSidebarAbierto(true)}
+            />
+          }
+        />
+        <Route
+          path="/gastos"
+          element={
+            <Gastos
               usuario={usuario}
               onAbrirSidebar={() => setSidebarAbierto(true)}
             />

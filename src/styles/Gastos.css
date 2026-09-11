@@ -1,0 +1,205 @@
+@import './Modulos.css';
+
+/* ═══════════════════════════════════════════
+   FILTROS POR CONCEPTO (pills)
+   ═══════════════════════════════════════════ */
+.filtros-conceptos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.filtro-concepto-btn {
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 2px solid #E5D5B7;
+  background: #FFFFFF;
+  color: #5C3A21;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.filtro-concepto-btn:hover {
+  border-color: #F26B7A;
+  transform: translateY(-2px);
+}
+
+.filtro-concepto-btn.activo {
+  background: linear-gradient(135deg, #F26B7A, #E55568);
+  color: #FFF8E7;
+  border-color: #F26B7A;
+  box-shadow: 0 6px 15px rgba(242, 107, 122, 0.3);
+}
+
+/* ═══════════════════════════════════════════
+   TABLA DE GASTOS
+   ═══════════════════════════════════════════ */
+.tabla-gastos-desktop {
+  display: block;
+}
+
+.cards-gastos-mobile {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .tabla-gastos-desktop {
+    display: none;
+  }
+
+  .cards-gastos-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+}
+
+.tabla-gastos-desktop .table-wrapper {
+  max-height: 550px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 2px solid #F0EAD8;
+}
+
+.tabla-gastos-desktop .data-table {
+  min-width: 800px;
+}
+
+.tabla-gastos-desktop .data-table thead {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+
+/* Scroll custom */
+.tabla-gastos-desktop .table-wrapper::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.tabla-gastos-desktop .table-wrapper::-webkit-scrollbar-track {
+  background: #FFF8E7;
+  border-radius: 10px;
+}
+
+.tabla-gastos-desktop .table-wrapper::-webkit-scrollbar-thumb {
+  background: #E5D5B7;
+  border-radius: 10px;
+}
+
+.tabla-gastos-desktop .table-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #F26B7A;
+}
+
+/* ═══════════════════════════════════════════
+   CARDS DE GASTOS (MÓVIL)
+   ═══════════════════════════════════════════ */
+.gasto-card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 0;
+  border: 2px solid #F0EAD8;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  transition: all 0.25s ease;
+}
+
+.gasto-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  border-color: #FFD93D;
+}
+
+.gasto-card-activa {
+  border-color: #F26B7A;
+  box-shadow: 0 8px 22px rgba(242, 107, 122, 0.25);
+}
+
+.gasto-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border-bottom: 2px dashed #F0EAD8;
+}
+
+.gasto-card-check {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.gasto-card-check input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  accent-color: #F26B7A;
+  cursor: pointer;
+  margin: 0;
+}
+
+.gasto-card-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.gasto-card-info strong {
+  color: #5C3A21;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.gasto-card-info small {
+  color: #8B7A66;
+  font-size: 11px;
+}
+
+.gasto-card-valor {
+  font-size: 18px;
+  font-weight: 800;
+  color: #F26B7A;
+  flex-shrink: 0;
+}
+
+.gasto-card-desc {
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #8B7A66;
+  border-bottom: 2px dashed #F0EAD8;
+}
+
+.gasto-card-lote {
+  padding: 12px 16px;
+  border-bottom: 2px dashed #F0EAD8;
+}
+
+.gasto-card-acciones {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 14px 16px;
+  background: #FAF6EE;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .filtros-conceptos {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    padding-bottom: 8px;
+  }
+
+  .filtro-concepto-btn {
+    white-space: nowrap;
+  }
+}
