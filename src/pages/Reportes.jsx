@@ -196,27 +196,29 @@ function Reportes({ usuario, onAbrirSidebar }) {
   const maxIngrediente = topIngredientes[0]?.total || 1;
 
   // 👥 Top clientes
-  const topClientes = useMemo(() => {
-    const mapa = {};
-    ventasFiltradas.forEach((v) => {
-      const key = v.clienteId || v.clienteNombre;
-      if (!mapa[key]) {
-        mapa[key] = {
-          nombre: v.clienteNombre,
-          telefono: v.clienteTelefono,
-          total: 0,
-          pagado: 0,
-          saldo: 0,
-          pedidos: 0
-        };
-      }
-      mapa[key].total += v.total || 0;
-      mapa[key].pagado += v.pagado || 0;
-      mapa[key].saldo += v.saldo || 0;
-      mapa[key].pedidos += 1;
-    });
-    return Object.values(mapa).sort((a, b) => b.total - a.total);
-  }, [ventasFiltradas]);
+ const topClientes = useMemo(() => {
+  const mapa = {};
+  ventasFiltradas.forEach((v) => {
+    const key = v.clienteId || v.clienteNombre;
+    if (!mapa[key]) {
+      mapa[key] = {
+        nombre: v.clienteNombre,
+        telefono: v.clienteTelefono,
+        total: 0,
+        pagado: 0,
+        saldo: 0,
+        pedidos: 0,
+        unidades: 0        // 👈 NUEVO
+      };
+    }
+    mapa[key].total += v.total || 0;
+    mapa[key].pagado += v.pagado || 0;
+    mapa[key].saldo += v.saldo || 0;
+    mapa[key].pedidos += 1;
+    mapa[key].unidades += Number(v.cantidad) || 0;  // 👈 NUEVO
+  });
+  return Object.values(mapa).sort((a, b) => b.total - a.total);
+}, [ventasFiltradas]);
 
   const clientesConDeuda = topClientes.filter((c) => c.saldo > 0).slice(0, 5);
 
@@ -559,13 +561,14 @@ function Reportes({ usuario, onAbrirSidebar }) {
                       >
                         #{i + 1}
                       </div>
-                      <div className="ranking-info">
-                        <strong>{c.nombre}</strong>
-                        <small>
-                          {c.pedidos} pedido{c.pedidos !== 1 ? 's' : ''} ·{' '}
-                          {c.telefono || 'sin teléfono'}
-                        </small>
-                      </div>
+                     <div className="ranking-info">
+  <strong>{c.nombre}</strong>
+  <small>
+    {c.pedidos} pedido{c.pedidos !== 1 ? 's' : ''} ·{' '}
+    <strong style={{ color: '#2A9D8F' }}>{c.unidades}</strong>{' '}
+    unidades
+  </small>
+</div>
                       <div className="ranking-montos">
                         <strong style={{ color: '#F26B7A' }}>
                           ${c.total.toLocaleString('es-CO')}
