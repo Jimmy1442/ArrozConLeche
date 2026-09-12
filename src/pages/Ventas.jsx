@@ -112,7 +112,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
     };
   }, []);
 
-  // 📅 Formatear fecha sin problema de timezone
+  // 📅 Formatear fecha
   const formatearFecha = (fecha) => {
     if (!fecha) return '...';
 
@@ -135,9 +135,23 @@ function Ventas({ usuario, onAbrirSidebar }) {
     return new Date(fecha).toLocaleDateString('es-CO');
   };
 
+  // 🎯 Obtener valor unitario de un lote
+  const getValorUnitarioLote = (loteId) => {
+    if (!loteId) return '';
+    const lote = lotes.find((l) => l.id === loteId);
+    if (!lote) return '';
+    // Intenta varias posibles propiedades
+    return (
+      lote.valorUnitario ??
+      lote.precioUnitario ??
+      lote.precio ??
+      lote.valorVenta ??
+      ''
+    );
+  };
+
   // 🔍 Filtrar ventas según búsqueda + lote
   const ventasFiltradas = ventas.filter((v) => {
-    // 1. Filtro por lote
     if (filtroLote !== 'todos') {
       if (filtroLote === 'sin-lote') {
         if (v.loteId) return false;
@@ -146,7 +160,6 @@ function Ventas({ usuario, onAbrirSidebar }) {
       }
     }
 
-    // 2. Filtro por búsqueda
     if (!busqueda.trim()) return true;
 
     const busq = busqueda.toLowerCase().trim();
@@ -170,6 +183,11 @@ function Ventas({ usuario, onAbrirSidebar }) {
   const pagadoFormulario  = abonoNum;
   const saldoFormulario   = totalFormulario - pagadoFormulario;
 
+  const estadoAutomaticoForm =
+    totalFormulario > 0 && pagadoFormulario >= totalFormulario
+      ? 'Pagado'
+      : 'Pendiente';
+
   // 🧮 Cálculos del modal de edición
   const editCantidad = Number(editando?.cantidad) || 0;
   const editValor    = Number(editando?.valorUnitario) || 0;
@@ -178,20 +196,23 @@ function Ventas({ usuario, onAbrirSidebar }) {
   const pagadoEditando = editAbono;
   const saldoEditando  = totalEditando - pagadoEditando;
 
-  // 📄 Cálculos de paginación (PC) — sobre ventas filtradas
+  const estadoAutomaticoEdit =
+    totalEditando > 0 && pagadoEditando >= totalEditando
+      ? 'Pagado'
+      : 'Pendiente';
+
+  // 📄 Cálculos de paginación (PC)
   const totalPaginas = Math.ceil(ventasFiltradas.length / porPagina);
   const inicio = (paginaActual - 1) * porPagina;
   const fin = inicio + porPagina;
   const ventasPaginadas = ventasFiltradas.slice(inicio, fin);
 
-  // Resetear página si cambia el tamaño o la cantidad
   useEffect(() => {
     if (paginaActual > totalPaginas && totalPaginas > 0) {
       setPaginaActual(1);
     }
   }, [porPagina, ventasFiltradas.length, totalPaginas, paginaActual]);
 
-  // Resetear filtros cuando cambie la búsqueda o el lote
   useEffect(() => {
     setPaginaActual(1);
     setMostrarEnMobile(20);
@@ -202,6 +223,16 @@ function Ventas({ usuario, onAbrirSidebar }) {
     setPaginaActual(n);
   };
 
+  // 🎯 Cuando cambia el lote en el formulario → autocompleta el valor unitario
+  useEffect(() => {
+    if (!nuevo.loteId) return;
+    const valorLote = getValorUnitarioLote(nuevo.loteId);
+    if (valorLote !== '') {
+      setNuevo((prev) => ({ ...prev, valorUnitario: String(valorLote) }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [nuevo.loteId]);
+
   // ➕ Agregar venta
   const agregar = async () => {
     const cliente = clientes.find((c) => c.id === nuevo.clienteId);
@@ -210,6 +241,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
     const total = cantidadNum * valorNum;
     const pagado = abonoNum;
     const saldo = total - pagado;
+    const estadoFinal = saldo <= 0 ? 'Pagado' : 'Pendiente';
 
     const loteSeleccionado = lotes.find((l) => l.id === nuevo.loteId);
 
@@ -228,7 +260,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
         pagado,
         saldo,
         entrega: nuevo.entrega,
-        estado: nuevo.estado,
+        estado: estadoFinal,
         loteId: loteSeleccionado?.id || null,
         loteNombre: loteSeleccionado?.nombre || null,
         fecha: serverTimestamp(),
@@ -263,6 +295,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
     const total = editCantidad * editValor;
     const pagado = editAbono;
     const saldo = total - pagado;
+    const estadoFinal = saldo <= 0 ? 'Pagado' : 'Pendiente';
 
     const loteSeleccionado = lotes.find((l) => l.id === editando.loteId);
 
@@ -282,7 +315,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
         pagado,
         saldo,
         entrega: editando.entrega || 'Pendiente',
-        estado: editando.estado || 'Pendiente',
+        estado: estadoFinal,
         loteId: loteSeleccionado?.id || null,
         loteNombre: loteSeleccionado?.nombre || null,
         editadoPor: usuario?.email || 'anónimo'
@@ -342,7 +375,6 @@ function Ventas({ usuario, onAbrirSidebar }) {
     ventasPaginadas.length > 0 &&
     ventasPaginadas.every((v) => seleccionados.includes(v.id));
 
-  // 💰 Totales (sobre ventas filtradas para reflejar la búsqueda)
   const totalVendido = ventasFiltradas.reduce((s, v) => s + (v.total || 0), 0);
   const totalPagado  = ventasFiltradas.reduce((s, v) => s + (v.pagado || 0), 0);
   const totalSaldo   = ventasFiltradas.reduce((s, v) => s + (v.saldo || 0), 0);
@@ -360,13 +392,17 @@ function Ventas({ usuario, onAbrirSidebar }) {
   const colorEstado = (e) =>
     e === 'Pagado' ? 'badge-verde' : 'badge-amarillo';
 
-  // Helper para obtener el nombre del lote seleccionado
   const nombreLoteFiltro =
     filtroLote === 'sin-lote'
       ? 'Sin lote'
       : filtroLote === 'todos'
       ? null
       : lotes.find((l) => l.id === filtroLote)?.nombre || '';
+
+  // 🎯 Valor sugerido del lote seleccionado en el form
+  const valorSugeridoLote = nuevo.loteId
+    ? getValorUnitarioLote(nuevo.loteId)
+    : '';
 
   return (
     <div className="modulo-layout">
@@ -412,11 +448,10 @@ function Ventas({ usuario, onAbrirSidebar }) {
             </div>
           </div>
 
-          {/* 🔍 BUSCADOR Y FILTROS (solo si NO está creando) */}
+          {/* 🔍 BUSCADOR Y FILTROS */}
           {!mostrarForm && (
             <>
               <div className="filtros-ventas">
-                {/* Buscador */}
                 <div className="buscador-ventas">
                   <span className="buscador-icon">🔍</span>
                   <input
@@ -436,7 +471,6 @@ function Ventas({ usuario, onAbrirSidebar }) {
                   )}
                 </div>
 
-                {/* Filtro por lote - Dropdown custom */}
                 <div className="filtro-lote-ventas" ref={dropdownRef}>
                   <button
                     type="button"
@@ -525,7 +559,6 @@ function Ventas({ usuario, onAbrirSidebar }) {
                 </div>
               </div>
 
-              {/* Contador de resultados */}
               {(busqueda || filtroLote !== 'todos') && (
                 <div className="buscador-resultados">
                   {ventasFiltradas.length === 0 ? (
@@ -594,20 +627,40 @@ function Ventas({ usuario, onAbrirSidebar }) {
                       <label>Lote (opcional)</label>
                       <select
                         value={nuevo.loteId}
-                        onChange={(e) =>
-                          setNuevo({ ...nuevo, loteId: e.target.value })
-                        }
+                        onChange={(e) => {
+                          const loteId = e.target.value;
+                          const valorLote = getValorUnitarioLote(loteId);
+
+                          setNuevo((prev) => ({
+                            ...prev,
+                            loteId,
+                            // 🎯 Autocompleta el valor unitario si el lote lo tiene
+                            valorUnitario:
+                              loteId && valorLote !== ''
+                                ? String(valorLote)
+                                : loteId
+                                ? prev.valorUnitario
+                                : ''
+                          }));
+                        }}
                       >
                         <option value="">— Sin lote (venta general) —</option>
-                        {lotes.map((l) => (
-                          <option key={l.id} value={l.id}>
-                            {l.nombre} · {l.cantidadProducida} producidos ·{' '}
-                            {formatearFecha(l.fecha)}
-                          </option>
-                        ))}
+                        {lotes.map((l) => {
+                          const valorLote = getValorUnitarioLote(l.id);
+                          return (
+                            <option key={l.id} value={l.id}>
+                              {l.nombre} · {l.cantidadProducida} producidos ·{' '}
+                              {formatearFecha(l.fecha)}
+                              {valorLote !== '' &&
+                                ` · $${Number(valorLote).toLocaleString(
+                                  'es-CO'
+                                )} c/u`}
+                            </option>
+                          );
+                        })}
                       </select>
                       <small className="hint">
-                        💡 Elige a qué lote pertenece esta venta (o déjalo vacío)
+                        💡 Al elegir un lote, se autocompleta el valor unitario
                       </small>
                     </div>
 
@@ -626,7 +679,15 @@ function Ventas({ usuario, onAbrirSidebar }) {
                     </div>
 
                     <div className="form-field">
-                      <label>Valor unitario</label>
+                      <label>
+                        Valor unitario
+                        {valorSugeridoLote !== '' && (
+                          <span className="label-auto">
+                            {' '}
+                            ✨ auto del lote
+                          </span>
+                        )}
+                      </label>
                       <input
                         type="number"
                         placeholder="0"
@@ -637,6 +698,9 @@ function Ventas({ usuario, onAbrirSidebar }) {
                           setNuevo({ ...nuevo, valorUnitario: e.target.value })
                         }
                       />
+                      <small className="hint">
+                        💡 Puedes editarlo si aplicas un precio distinto
+                      </small>
                     </div>
 
                     <div className="form-field">
@@ -671,17 +735,18 @@ function Ventas({ usuario, onAbrirSidebar }) {
                     </div>
 
                     <div className="form-field">
-                      <label>Estado</label>
-                      <select
-                        value={nuevo.estado}
-                        onChange={(e) =>
-                          setNuevo({ ...nuevo, estado: e.target.value })
-                        }
-                      >
-                        {ESTADOS.map((e) => (
-                          <option key={e} value={e}>{e}</option>
-                        ))}
-                      </select>
+                      <label>Estado (automático)</label>
+                      <div className={`estado-auto-box ${estadoAutomaticoForm === 'Pagado' ? 'estado-auto-pagado' : 'estado-auto-pendiente'}`}>
+                        <span className="estado-auto-icon">
+                          {estadoAutomaticoForm === 'Pagado' ? '✅' : '⏳'}
+                        </span>
+                        <span className="estado-auto-texto">{estadoAutomaticoForm}</span>
+                        <small className="estado-auto-hint">
+                          {estadoAutomaticoForm === 'Pagado'
+                            ? 'Pago completo'
+                            : 'Falta por cobrar'}
+                        </small>
+                      </div>
                     </div>
 
                     <div className="form-field form-field-full">
@@ -715,10 +780,9 @@ function Ventas({ usuario, onAbrirSidebar }) {
             </div>
           )}
 
-          {/* 📋 TABLA (desktop/tablet) + CARDS (móvil) */}
+          {/* 📋 TABLA + CARDS */}
           {!mostrarForm && (
             <div className="dashboard-panel">
-              {/* Vista de tabla (PC/Tablet) */}
               <div className="tabla-ventas-desktop">
                 <div className="table-wrapper">
                   <table className="data-table">
@@ -890,7 +954,6 @@ function Ventas({ usuario, onAbrirSidebar }) {
                   </table>
                 </div>
 
-                {/* 📄 PAGINACIÓN (PC) */}
                 {ventasFiltradas.length > 0 && (
                   <div className="paginacion">
                     <div className="paginacion-info">
@@ -943,7 +1006,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
                 )}
               </div>
 
-              {/* Vista de cards (móvil) */}
+              {/* Vista móvil */}
               <div className="cards-ventas-mobile">
                 {cargando ? (
                   <p className="panel-vacio">Cargando ventas... 🍚</p>
@@ -1084,7 +1147,6 @@ function Ventas({ usuario, onAbrirSidebar }) {
                       );
                     })}
 
-                    {/* 📱 Botón "Ver más" en móvil */}
                     {ventasFiltradas.length > mostrarEnMobile && (
                       <button
                         className="btn-ver-mas-mobile"
@@ -1157,9 +1219,21 @@ function Ventas({ usuario, onAbrirSidebar }) {
                   <label>Lote (opcional)</label>
                   <select
                     value={editando.loteId || ''}
-                    onChange={(e) =>
-                      setEditando({ ...editando, loteId: e.target.value })
-                    }
+                    onChange={(e) => {
+                      const loteId = e.target.value;
+                      const valorLote = getValorUnitarioLote(loteId);
+
+                      setEditando((prev) => ({
+                        ...prev,
+                        loteId,
+                        valorUnitario:
+                          loteId && valorLote !== ''
+                            ? String(valorLote)
+                            : loteId
+                            ? prev.valorUnitario
+                            : prev.valorUnitario
+                      }));
+                    }}
                   >
                     <option value="">— Sin lote (venta general) —</option>
                     {lotes.map((l) => (
@@ -1228,17 +1302,18 @@ function Ventas({ usuario, onAbrirSidebar }) {
                 </div>
 
                 <div className="form-field">
-                  <label>Estado</label>
-                  <select
-                    value={editando.estado || 'Pendiente'}
-                    onChange={(e) =>
-                      setEditando({ ...editando, estado: e.target.value })
-                    }
-                  >
-                    {ESTADOS.map((e) => (
-                      <option key={e} value={e}>{e}</option>
-                    ))}
-                  </select>
+                  <label>Estado (automático)</label>
+                  <div className={`estado-auto-box ${estadoAutomaticoEdit === 'Pagado' ? 'estado-auto-pagado' : 'estado-auto-pendiente'}`}>
+                    <span className="estado-auto-icon">
+                      {estadoAutomaticoEdit === 'Pagado' ? '✅' : '⏳'}
+                    </span>
+                    <span className="estado-auto-texto">{estadoAutomaticoEdit}</span>
+                    <small className="estado-auto-hint">
+                      {estadoAutomaticoEdit === 'Pagado'
+                        ? 'Pago completo'
+                        : 'Falta por cobrar'}
+                    </small>
+                  </div>
                 </div>
 
                 <div className="form-field form-field-full">
@@ -1283,5 +1358,5 @@ function Ventas({ usuario, onAbrirSidebar }) {
     </div>
   );
 }
- 
+
 export default Ventas;

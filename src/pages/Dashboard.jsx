@@ -15,8 +15,12 @@ function Dashboard({ usuario, onAbrirSidebar }) {
   const [ventas, setVentas] = useState([]);
   const [lotes, setLotes] = useState([]);
   const [clientes, setClientes] = useState([]);
+  const [gastos, setGastos] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState('');
+
+  // 🎛️ Selector de lote activo ('' = auto = el más reciente)
+  const [loteSeleccionadoId, setLoteSeleccionadoId] = useState('');
 
   // 🔥 Cargar todo
   useEffect(() => {
@@ -51,10 +55,20 @@ function Dashboard({ usuario, onAbrirSidebar }) {
       setClientes(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     });
 
+    const qGastos = query(
+      collection(db, 'gastos'),
+      orderBy('fecha', 'desc'),
+      limit(500)
+    );
+    const unsubGastos = onSnapshot(qGastos, (snap) => {
+      setGastos(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+
     return () => {
       unsubVentas();
       unsubLotes();
       unsubClientes();
+      unsubGastos();
     };
   }, []);
 
@@ -87,19 +101,78 @@ function Dashboard({ usuario, onAbrirSidebar }) {
       pedidos: 0
     };
 
-  // 🍚 LOTE ACTIVO = el más reciente
-  const loteActivo = lotes.length > 0 ? lotes[0] : null;
+  // 🗂️ Gastos agrupados por loteId
+  const gastosPorLote = {};
+  gastos.forEach((g) => {
+    if (!g.loteId) return;
+    if (!gastosPorLote[g.loteId]) {
+      gastosPorLote[g.loteId] = { total: 0, cantidad: 0 };
+    }
+    gastosPorLote[g.loteId].total += Number(g.valor) || 0;
+    gastosPorLote[g.loteId].cantidad += 1;
+  });
+
+  const getGastosLote = (id) =>
+    gastosPorLote[id] || { total: 0, cantidad: 0 };
+
+  // 🍚 LOTE ACTIVO = el seleccionado o el más reciente
+  const loteActivo = loteSeleccionadoId
+    ? lotes.find((l) => l.id === loteSeleccionadoId) || lotes[0]
+    : lotes.length > 0
+    ? lotes[0]
+    : null;
+
   const ventasActivo = loteActivo ? getVentasLote(loteActivo.id) : null;
+  const gastosActivo = loteActivo
+    ? getGastosLote(loteActivo.id)
+    : { total: 0, cantidad: 0 };
+
+  // 💵 Base del lote activo
+  const baseActivo = Number(loteActivo?.base) || 0;
+
+  // 🥛 Costos del lote activo
+  const costoActivo = Number(loteActivo?.costoTotal) || 0;
+
+  // 📊 Total con gastos = Cobrado + Base − Gastos
+  const totalConGastosActivo =
+    (ventasActivo?.pagado || 0) + baseActivo - (gastosActivo?.total || 0);
+
+  // 📈 Ganancia aproximada del lote activo = Producidos × Valor unitario
+  const gananciaAproximadaActivo =
+    (Number(loteActivo?.cantidadProducida) || 0) *
+    (Number(loteActivo?.valorUnitario) || 0);
+
+  // 🔴 Clientes que deben en este lote
+  const clientesDeudoresActivo = loteActivo
+    ? Object.values(
+        ventas
+          .filter((v) => v.loteId === loteActivo.id && (v.saldo || 0) > 0)
+          .reduce((acc, v) => {
+            const key = v.clienteId || v.clienteNombre;
+            if (!acc[key]) {
+              acc[key] = {
+                nombre: v.clienteNombre,
+                saldo: 0
+              };
+            }
+            acc[key].saldo += Number(v.saldo) || 0;
+            return acc;
+          }, {})
+      )
+    : [];
+
+  const cantidadDeudores = clientesDeudoresActivo.length;
 
   // 💰 TOTALES HISTÓRICOS
   const totalCostos = lotes.reduce((s, l) => s + (l.costoTotal || 0), 0);
 
-  // 💰 Ventas cobradas (solo el dinero que YA te pagaron)
   const totalVentas = ventas.reduce((s, v) => s + (v.pagado || 0), 0);
   const totalPagado = ventas.reduce((s, v) => s + (v.pagado || 0), 0);
   const totalPorCobrar = ventas.reduce((s, v) => s + (v.saldo || 0), 0);
 
-  // 💡 GANANCIA NETA: dinero realmente cobrado − costos de lotes con ventas
+  const totalBase = lotes.reduce((s, l) => s + (Number(l.base) || 0), 0);
+  const totalGastos = gastos.reduce((s, g) => s + (Number(g.valor) || 0), 0);
+
   const lotesConVentas = lotes.filter((l) => {
     const v = getVentasLote(l.id);
     return v.pedidos > 0;
@@ -110,7 +183,9 @@ function Dashboard({ usuario, onAbrirSidebar }) {
   );
   const gananciaNeta = totalPagado - costosLotesConVentas;
 
-  // 💡 VALOR TOTAL DE PRODUCCIÓN = producidos × valor unitario de cada lote
+  const totalConGastosNegocio = totalPagado + totalBase - totalGastos;
+
+  // 📈 GANANCIA APROXIMADA = Valor total de la producción
   const gananciaAproximada = lotes.reduce((suma, l) => {
     const producidos = Number(l.cantidadProducida) || 0;
     const valorUnitario = Number(l.valorUnitario) || 0;
@@ -143,19 +218,28 @@ function Dashboard({ usuario, onAbrirSidebar }) {
     .sort((a, b) => b.pagado - a.pagado)
     .slice(0, 5);
 
-  // 🏆 Top lotes rentables
+  // 🏆 Top lotes rentables (por total con gastos)
   const topLotes = lotes
     .map((l) => {
       const v = getVentasLote(l.id);
+      const g = getGastosLote(l.id);
+      const base = Number(l.base) || 0;
+      const costo = Number(l.costoTotal) || 0;
+      const totalConGastos = v.pagado + base - g.total;
+
       return {
         ...l,
         ventasCantidad: v.cantidad,
         ventasTotal: v.total,
         ventasPagado: v.pagado,
-        ganancia: v.total - (l.costoTotal || 0)
+        base,
+        gastosTotal: g.total,
+        costoTotal: costo,
+        totalConGastos,
+        ganancia: v.total - costo
       };
     })
-    .sort((a, b) => b.ganancia - a.ganancia)
+    .sort((a, b) => b.totalConGastos - a.totalConGastos)
     .slice(0, 5);
 
   // 📅 Formatear fecha sin problema de timezone
@@ -232,26 +316,34 @@ function Dashboard({ usuario, onAbrirSidebar }) {
               <div className="lote-activo-header">
                 <div>
                   <span className="lote-activo-badge">🍚 LOTE ACTIVO</span>
-                  <h2>{loteActivo.nombre}</h2>
+
+                  {/* 🎛️ SELECTOR DE LOTE */}
+                  <div className="lote-selector">
+                    <select
+                      value={loteSeleccionadoId || loteActivo.id}
+                      onChange={(e) => setLoteSeleccionadoId(e.target.value)}
+                    >
+                      {lotes.map((l) => (
+                        <option key={l.id} value={l.id}>
+                          🍚 {l.nombre} · {formatearFecha(l.fecha)}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
                   <p>
                     {formatearFecha(loteActivo.fecha)} ·{' '}
                     {loteActivo.presentacion || 'Sin presentación'}
                   </p>
                 </div>
                 <div className="lote-activo-ganancia">
-                  <span>Ganancia</span>
+                  <span>📊 Total con gastos</span>
                   <strong
                     style={{
-                      color:
-                        (ventasActivo?.total || 0) - (loteActivo.costoTotal || 0) >= 0
-                          ? '#2A9D8F'
-                          : '#F26B7A'
+                      color: totalConGastosActivo >= 0 ? '#2A9D8F' : '#F26B7A'
                     }}
                   >
-                    $
-                    {(
-                      (ventasActivo?.total || 0) - (loteActivo.costoTotal || 0)
-                    ).toLocaleString('es-CO')}
+                    ${totalConGastosActivo.toLocaleString('es-CO')}
                   </strong>
                 </div>
               </div>
@@ -260,8 +352,8 @@ function Dashboard({ usuario, onAbrirSidebar }) {
               <div className="lote-activo-progreso">
                 <div className="progreso-header">
                   <span>
-                    ✅ Vendidos: <strong>{ventasActivo?.cantidad || 0}</strong> de{' '}
-                    <strong>{loteActivo.cantidadProducida}</strong>
+                    ✅ Vendidos: <strong>{ventasActivo?.cantidad || 0}</strong>{' '}
+                    de <strong>{loteActivo.cantidadProducida}</strong>
                   </span>
                   <strong>{progresoVentas}%</strong>
                 </div>
@@ -320,89 +412,209 @@ function Dashboard({ usuario, onAbrirSidebar }) {
                   </strong>
                 </div>
 
-               <div className="lote-stat lote-stat-money">
-  <span className="lote-stat-label">💰 Cobrado</span>
-  <strong
-    className="lote-stat-valor"
-    style={{ color: '#2A9D8F' }}
-  >
-    ${(ventasActivo?.pagado || 0).toLocaleString('es-CO')}
-  </strong>
-</div>
+                <div className="lote-stat lote-stat-money">
+                  <span className="lote-stat-label">✅ Cobrado</span>
+                  <strong
+                    className="lote-stat-valor"
+                    style={{ color: '#2A9D8F' }}
+                  >
+                    ${(ventasActivo?.pagado || 0).toLocaleString('es-CO')}
+                  </strong>
+                </div>
+                <div className="lote-stat lote-stat-money">
+                  <span className="lote-stat-label">💵 Base</span>
+                  <strong
+                    className="lote-stat-valor"
+                    style={{ color: '#3DC5B8' }}
+                  >
+                    ${baseActivo.toLocaleString('es-CO')}
+                  </strong>
+                </div>
+                <div className="lote-stat lote-stat-money">
+                  <span className="lote-stat-label">🗂️ Gastos</span>
+                  <strong
+                    className="lote-stat-valor"
+                    style={{ color: '#F26B7A' }}
+                  >
+                    ${(gastosActivo?.total || 0).toLocaleString('es-CO')}
+                  </strong>
+                </div>
                 <div className="lote-stat lote-stat-money">
                   <span className="lote-stat-label">🥛 Costos</span>
                   <strong
                     className="lote-stat-valor"
                     style={{ color: '#F26B7A' }}
                   >
-                    ${(loteActivo.costoTotal || 0).toLocaleString('es-CO')}
+                    ${costoActivo.toLocaleString('es-CO')}
                   </strong>
                 </div>
-                <div className="lote-stat lote-stat-money">
-                  <span className="lote-stat-label">⏳ Por cobrar</span>
+
+                {/* 🔴 Debe */}
+                <div className="lote-stat lote-stat-debe">
+                  <span className="lote-stat-label">🔴 Debe</span>
                   <strong
                     className="lote-stat-valor"
-                    style={{ color: '#9C7A00' }}
+                    style={{
+                      color:
+                        (ventasActivo?.saldo || 0) > 0 ? '#F26B7A' : '#8B7A66',
+                      fontSize: (ventasActivo?.saldo || 0) > 0 ? '20px' : '15px'
+                    }}
                   >
                     ${(ventasActivo?.saldo || 0).toLocaleString('es-CO')}
                   </strong>
+                  {cantidadDeudores > 0 && (
+                    <small
+                      style={{
+                        fontSize: 10,
+                        color: '#8B7A66',
+                        marginTop: 2,
+                        display: 'block',
+                        lineHeight: 1.4
+                      }}
+                    >
+                      👤 {cantidadDeudores}{' '}
+                      {cantidadDeudores === 1
+                        ? 'cliente debe'
+                        : 'clientes deben'}
+                      :
+                      <br />
+                      <strong style={{ color: '#C7394A' }}>
+                        {clientesDeudoresActivo
+                          .slice(0, 2)
+                          .map((c) => c.nombre)
+                          .join(', ')}
+                        {cantidadDeudores > 2 &&
+                          ` +${cantidadDeudores - 2} más`}
+                      </strong>
+                    </small>
+                  )}
                 </div>
+
                 <div className="lote-stat lote-stat-money">
-                  <span className="lote-stat-label">🛒 Pedidos</span>
-                  <strong className="lote-stat-valor">
-                    {ventasActivo?.pedidos || 0}
+                  <span className="lote-stat-label">
+                    📈 Ganancia aproximada
+                  </span>
+                  <strong
+                    className="lote-stat-valor"
+                    style={{ color: '#2A9D8F' }}
+                  >
+                    ${gananciaAproximadaActivo.toLocaleString('es-CO')}
                   </strong>
+                  <small
+                    style={{
+                      fontSize: 10,
+                      color: '#8B7A66',
+                      marginTop: 2
+                    }}
+                  >
+                    {loteActivo.cantidadProducida} × $
+                    {Number(loteActivo.valorUnitario || 0).toLocaleString(
+                      'es-CO'
+                    )}
+                  </small>
+                </div>
+
+                <div className="lote-stat lote-stat-destacado">
+                  <span className="lote-stat-label">
+                    📊 Total con gastos
+                  </span>
+                  <strong
+                    className="lote-stat-valor"
+                    style={{
+                      color:
+                        totalConGastosActivo >= 0 ? '#2A9D8F' : '#F26B7A'
+                    }}
+                  >
+                    ${totalConGastosActivo.toLocaleString('es-CO')}
+                  </strong>
+                  <small>Cobrado + Base − Gastos</small>
                 </div>
               </div>
             </div>
           )}
 
           {/* 📊 RESUMEN GENERAL */}
-          <div className="seccion-titulo">
-            <h2>📊 Resumen general</h2>
-            <p>Acumulado histórico de todos tus lotes y ventas</p>
-          </div>
+          <div className="resumen-general-panel">
+            <div className="resumen-general-header">
+              <div>
+                <span className="resumen-general-badge">
+                  📊 RESUMEN GENERAL
+                </span>
+                <h2>Acumulado histórico</h2>
+                <p>De todos tus lotes, ventas y gastos</p>
+              </div>
+            </div>
 
-          <div className="stats-grid">
-            <StatCard
-              icon="🍚"
-              label="Total lotes"
-              valor={lotes.length}
-              color="chocolate"
-            />
-            <StatCard
-              icon="🥛"
-              label="Costos totales"
-              valor={`$${totalCostos.toLocaleString('es-CO')}`}
-              color="chocolate"
-            />
-            <StatCard
-              icon="💰"
-              label="Ventas cobradas"
-              valor={`$${totalVentas.toLocaleString('es-CO')}`}
-              color="coral"
-            />
-          </div>
+            <div className="stats-grid stats-grid-3">
+              <StatCard
+                icon="🍚"
+                label="Total lotes"
+                valor={lotes.length}
+                color="chocolate"
+              />
+              <StatCard
+                icon="🥛"
+                label="Costos ingredientes"
+                valor={`$${totalCostos.toLocaleString('es-CO')}`}
+                color="chocolate"
+              />
+              <StatCard
+                icon="🗂️"
+                label="Gastos externos"
+                valor={`$${totalGastos.toLocaleString('es-CO')}`}
+                color="coral"
+              />
+            </div>
 
-          <div className="stats-grid stats-grid-3">
-            <StatCard
-              icon="⏳"
-              label="Por cobrar"
-              valor={`$${totalPorCobrar.toLocaleString('es-CO')}`}
-              color="amarillo"
-            />
-            <StatCard
-              icon="✅"
-              label="Ganancia neta (cobrado − costos con ventas)"
-              valor={`$${gananciaNeta.toLocaleString('es-CO')}`}
-              color={gananciaNeta >= 0 ? 'turquesa' : 'coral'}
-            />
-            <StatCard
-              icon="📈"
-              label="Valor total de producción (producidos × precio)"
-              valor={`$${gananciaAproximada.toLocaleString('es-CO')}`}
-              color="turquesa"
-            />
+            <div className="stats-grid stats-grid-3">
+              <StatCard
+                icon="✅"
+                label="Ventas cobradas"
+                valor={`$${totalVentas.toLocaleString('es-CO')}`}
+                color="turquesa"
+              />
+              <StatCard
+                icon="💵"
+                label="Base total"
+                valor={`$${totalBase.toLocaleString('es-CO')}`}
+                color="turquesa"
+              />
+              <StatCard
+                icon="⏳"
+                label="Por cobrar"
+                valor={`$${totalPorCobrar.toLocaleString('es-CO')}`}
+                color="amarillo"
+              />
+            </div>
+
+            <div className="stats-grid">
+              <StatCard
+                icon="📈"
+                label="Ganancia aproximada (producidos × precio)"
+                valor={`$${gananciaAproximada.toLocaleString('es-CO')}`}
+                color="turquesa"
+              />
+            </div>
+
+            <div className="dashboard-total-simple">
+              <div className="dashboard-total-card dashboard-total-naranja">
+                <div className="dashboard-total-info">
+                  <span className="dashboard-total-label">
+                    📊 Total con gastos
+                  </span>
+                  <small>Cobrado + Base − Gastos</small>
+                </div>
+                <strong
+                  className="dashboard-total-valor"
+                  style={{
+                    color:
+                      totalConGastosNegocio >= 0 ? '#2A9D8F' : '#F26B7A'
+                  }}
+                >
+                  ${totalConGastosNegocio.toLocaleString('es-CO')}
+                </strong>
+              </div>
+            </div>
           </div>
 
           {/* 🏆 TOP LOTES + 👥 TOP CLIENTES */}
@@ -416,7 +628,9 @@ function Dashboard({ usuario, onAbrirSidebar }) {
                   {topLotes.map((l, i) => (
                     <div key={l.id} className="ranking-item">
                       <div
-                        className={`ranking-pos ${i < 3 ? `pos-${i + 1}` : ''}`}
+                        className={`ranking-pos ${
+                          i < 3 ? `pos-${i + 1}` : ''
+                        }`}
                       >
                         #{i + 1}
                       </div>
@@ -431,14 +645,15 @@ function Dashboard({ usuario, onAbrirSidebar }) {
                       <div className="ranking-montos">
                         <strong
                           style={{
-                            color: l.ganancia >= 0 ? '#2A9D8F' : '#F26B7A'
+                            color:
+                              l.totalConGastos >= 0 ? '#2A9D8F' : '#F26B7A'
                           }}
                         >
-                          ${l.ganancia.toLocaleString('es-CO')}
+                          ${l.totalConGastos.toLocaleString('es-CO')}
                         </strong>
                         <small style={{ color: '#8B7A66' }}>
-                          ventas $
-                          {(l.ventasTotal || 0).toLocaleString('es-CO')}
+                          cobrado $
+                          {(l.ventasPagado || 0).toLocaleString('es-CO')}
                         </small>
                       </div>
                     </div>

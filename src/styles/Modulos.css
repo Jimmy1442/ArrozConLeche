@@ -2307,3 +2307,54 @@
     padding: 8px 12px;
   }
 }
+
+/* ═══════════════════════════════════════════
+   ESTADO AUTOMÁTICO (solo lectura)
+   ═══════════════════════════════════════════ */
+.estado-auto-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 2px solid;
+  font-weight: 700;
+  transition: all 0.25s ease;
+}
+
+.estado-auto-pagado {
+  background: linear-gradient(135deg, #E8F9F0, #D3F5E0);
+  border-color: #7ED9A8;
+  color: #1E7A4C;
+}
+
+.estado-auto-pendiente {
+  background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
+  border-color: #FFD93D;
+  color: #9C7A00;
+}
+
+.estado-auto-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.estado-auto-texto {
+  font-size: 14px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.estado-auto-hint {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8B7A66;
+  margin-left: auto;
+}
+
+@media (max-width: 480px) {
+  .estado-auto-hint {
+    display: none;
+  }
+}

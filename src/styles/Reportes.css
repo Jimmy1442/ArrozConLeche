@@ -131,44 +131,6 @@
 }
 
 /* ═══════════════════════════════════════════
-   RESUMEN EJECUTIVO
-   ═══════════════════════════════════════════ */
-.resumen-ejecutivo {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 18px;
-}
-
-.ejecutivo-item {
-  background: #FFF8E7;
-  border-radius: 14px;
-  padding: 18px 20px;
-  border-left: 4px solid #FFD93D;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.ejecutivo-label {
-  font-size: 12px;
-  color: #8B7A66;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 500;
-}
-
-.ejecutivo-valor {
-  font-size: 24px;
-  font-weight: 700;
-  color: #5C3A21;
-}
-
-.ejecutivo-hint {
-  font-size: 12px;
-  color: #8B7A66;
-}
-
-/* ═══════════════════════════════════════════
    GRID 2 COLUMNAS
    ═══════════════════════════════════════════ */
 .reportes-grid-2 {
@@ -324,7 +286,6 @@
 .ranking-montos small {
   font-size: 11px;
   font-weight: 600;
-  align-items: center;
 }
 
 /* ═══════════════════════════════════════════
@@ -412,17 +373,6 @@
   justify-content: center;
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(242, 107, 122, 0.3);
-}
-
-.telefono-link {
-  color: #F26B7A;
-  text-decoration: none;
-  font-weight: 600;
-  transition: color 0.2s;
-}
-
-.telefono-link:hover {
-  color: #2A9D8F;
 }
 
 /* ═══════════════════════════════════════════
@@ -637,395 +587,6 @@
 }
 
 /* ═══════════════════════════════════════════
-   REPORTES - VISTA MOBILE CON CARDS
-   ═══════════════════════════════════════════ */
-.tabla-reportes-desktop {
-  display: block;
-}
-
-.cards-reportes-mobile {
-  display: none;
-}
-
-.reporte-card {
-  background: #FFFFFF;
-  border-radius: 18px;
-  padding: 0;
-  border: 2px solid #F0EAD8;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  transition: all 0.25s ease;
-  overflow: hidden;
-  position: relative;
-}
-
-.reporte-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-  border-color: #FFD93D;
-}
-
-.reporte-card-barra {
-  height: 5px;
-  width: 100%;
-}
-
-.reporte-card-barra.barra-verde {
-  background: linear-gradient(90deg, #2A9D8F, #3DC5B8);
-}
-
-.reporte-card-barra.barra-roja {
-  background: linear-gradient(90deg, #F26B7A, #E55568);
-}
-
-.reporte-card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 16px;
-  border-bottom: 2px dashed #F0EAD8;
-}
-
-.reporte-card-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-  min-width: 0;
-}
-
-.reporte-card-info strong {
-  color: #5C3A21;
-  font-size: 16px;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.reporte-card-info small {
-  color: #8B7A66;
-  font-size: 11px;
-  font-weight: 500;
-}
-
-.reporte-card-margen {
-  padding: 6px 12px;
-  border-radius: 12px;
-  font-size: 13px;
-  font-weight: 800;
-  flex-shrink: 0;
-  letter-spacing: -0.3px;
-}
-
-.reporte-card-ganancia {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 14px 16px;
-  border-bottom: 2px solid;
-}
-
-.reporte-card-ganancia.ganancia-positiva {
-  background: linear-gradient(135deg, #E8F9F0, #D3F5E0);
-  border-bottom-color: #7ED9A8;
-}
-
-.reporte-card-ganancia.ganancia-negativa {
-  background: linear-gradient(135deg, #FFE5E8, #FFD3D8);
-  border-bottom-color: #F26B7A;
-}
-
-.reporte-ganancia-label {
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: #5C3A21;
-}
-
-.reporte-ganancia-valor {
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-}
-
-.ganancia-positiva .reporte-ganancia-valor {
-  color: #1E7A4C;
-}
-
-.ganancia-negativa .reporte-ganancia-valor {
-  color: #C7394A;
-}
-
-.reporte-card-info-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
-  padding: 14px 16px;
-}
-
-.reporte-info-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px 12px;
-  background: #FFF8E7;
-  border-radius: 12px;
-  border-left: 3px solid #FFD93D;
-}
-
-.reporte-info-full {
-  grid-column: 1 / -1;
-  border-left-color: #F26B7A;
-}
-
-.reporte-info-label {
-  font-size: 10px;
-  color: #8B7A66;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 700;
-}
-
-.reporte-info-item strong {
-  color: #5C3A21;
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.reporte-card-progreso {
-  padding: 0 16px 16px;
-}
-
-.reporte-progreso-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-  font-size: 12px;
-  color: #8B7A66;
-  font-weight: 600;
-}
-
-.reporte-progreso-header strong {
-  color: #2A9D8F;
-  font-weight: 800;
-}
-
-.reporte-progreso-track {
-  height: 10px;
-  background: #FFF8E7;
-  border-radius: 6px;
-  overflow: hidden;
-  border: 1px solid #F0EAD8;
-}
-
-.reporte-progreso-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #3DC5B8, #2A9D8F);
-  border-radius: 6px;
-  transition: width 0.8s ease;
-}
-
-/* ═══════════════════════════════════════════
-   RESPONSIVE
-   ═══════════════════════════════════════════ */
-
-/* 📱 TABLET Y CELULAR (≤ 1024px) */
-@media (max-width: 1024px) {
-  /* Reportes: ocultar tabla, mostrar cards */
-  .tabla-reportes-desktop {
-    display: none;
-  }
-
-  .cards-reportes-mobile {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-  }
-
-  /* Deudas: ocultar tabla, mostrar cards */
-  .tabla-deudas-desktop {
-    display: none;
-  }
-
-  .cards-deudas-mobile {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  /* Filtros → 1 columna */
-  .filtros-panel {
-    grid-template-columns: 1fr;
-    padding: 15px;
-    gap: 12px;
-  }
-
-  /* Reportes grid 2 → 1 */
-  .reportes-grid-2 {
-    grid-template-columns: 1fr;
-  }
-
-  /* Resumen ejecutivo → 2 columnas */
-  .resumen-ejecutivo {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-/* 📱 CELULAR (≤ 768px) */
-@media (max-width: 768px) {
-  .reportes-header h1 {
-    font-size: 20px;
-  }
-
-  .reportes-header p {
-    font-size: 13px;
-  }
-
-  .filtro-grupo label {
-    font-size: 11px;
-  }
-
-  .filtro-grupo select {
-    font-size: 13px;
-    padding: 10px 12px;
-  }
-
-  /* Banner del lote */
-  .lote-seleccionado-banner {
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 18px;
-    gap: 12px;
-  }
-
-  .lote-seleccionado-banner h2 {
-    font-size: 18px;
-  }
-
-  .btn-ver-todos {
-    width: 100%;
-    text-align: center;
-  }
-
-  /* Resumen ejecutivo → 1 columna */
-  .resumen-ejecutivo {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-
-  .ejecutivo-item {
-    padding: 14px 16px;
-  }
-
-  .ejecutivo-valor {
-    font-size: 20px;
-  }
-
-  /* Reportes grid 2 → 1 */
-  .reportes-grid-2 {
-    grid-template-columns: 1fr;
-    gap: 15px;
-  }
-
-  /* Ranking */
-  .ranking-item {
-    padding: 10px 12px;
-  }
-
-  .ranking-pos {
-    width: 28px;
-    height: 28px;
-    font-size: 11px;
-  }
-
-  .ranking-info strong {
-    font-size: 13px;
-  }
-
-  .ranking-info small {
-    font-size: 10px;
-  }
-
-  .ranking-montos strong {
-    font-size: 13px;
-  }
-
-  /* Ingredientes */
-  .ingrediente-header {
-    font-size: 12px;
-  }
-
-  .ingrediente-cantidad {
-    font-size: 10px;
-  }
-
-  /* Gráfico de lotes */
-  .grafico-lote-item {
-    padding: 14px;
-  }
-
-  .grafico-lote-nombre {
-    font-size: 13px;
-  }
-
-  .grafico-lote-barra {
-    height: 22px;
-  }
-
-  .grafico-lote-monto {
-    font-size: 11px;
-    right: 8px;
-  }
-}
-
-/* 📱 CELULAR PEQUEÑO (≤ 480px) */
-@media (max-width: 480px) {
-  .reporte-card-info strong {
-    font-size: 15px;
-  }
-
-  .reporte-ganancia-valor {
-    font-size: 22px;
-  }
-
-  .reporte-info-item strong {
-    font-size: 15px;
-  }
-
-  .reporte-card-margen {
-    font-size: 12px;
-    padding: 5px 10px;
-  }
-
-  /* Deudas */
-  .deuda-card-info strong {
-    font-size: 15px;
-  }
-
-  .deuda-valor {
-    font-size: 22px;
-  }
-
-  .deuda-card-avatar {
-    width: 42px;
-    height: 42px;
-    font-size: 18px;
-  }
-
-  .deuda-info-item strong {
-    font-size: 14px;
-  }
-
-  .btn-accion-deuda {
-    font-size: 12px;
-    padding: 10px 12px;
-  }
-}
-
-/* ═══════════════════════════════════════════
    DOBLE TARJETA DE TOTALES
    ═══════════════════════════════════════════ */
 .total-real-doble {
@@ -1033,13 +594,6 @@
   grid-template-columns: 1fr 1fr;
   gap: 20px;
   margin-bottom: 25px;
-}
-
-@media (max-width: 768px) {
-  .total-real-doble {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
 }
 
 .total-real-destacado {
@@ -1098,6 +652,127 @@
   white-space: nowrap;
 }
 
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+   ═══════════════════════════════════════════ */
+
+/* 📱 TABLET Y CELULAR (≤ 1024px) */
+@media (max-width: 1024px) {
+  .tabla-deudas-desktop {
+    display: none;
+  }
+
+  .cards-deudas-mobile {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .filtros-panel {
+    grid-template-columns: 1fr;
+    padding: 15px;
+    gap: 12px;
+  }
+
+  .reportes-grid-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 📱 CELULAR (≤ 768px) */
+@media (max-width: 768px) {
+  .reportes-header h1 {
+    font-size: 20px;
+  }
+
+  .reportes-header p {
+    font-size: 13px;
+  }
+
+  .filtro-grupo label {
+    font-size: 11px;
+  }
+
+  .filtro-grupo select {
+    font-size: 13px;
+    padding: 10px 12px;
+  }
+
+  .lote-seleccionado-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 18px;
+    gap: 12px;
+  }
+
+  .lote-seleccionado-banner h2 {
+    font-size: 18px;
+  }
+
+  .btn-ver-todos {
+    width: 100%;
+    text-align: center;
+  }
+
+  .reportes-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .ranking-item {
+    padding: 10px 12px;
+  }
+
+  .ranking-pos {
+    width: 28px;
+    height: 28px;
+    font-size: 11px;
+  }
+
+  .ranking-info strong {
+    font-size: 13px;
+  }
+
+  .ranking-info small {
+    font-size: 10px;
+  }
+
+  .ranking-montos strong {
+    font-size: 13px;
+  }
+
+  .ingrediente-header {
+    font-size: 12px;
+  }
+
+  .ingrediente-cantidad {
+    font-size: 10px;
+  }
+
+  .grafico-lote-item {
+    padding: 14px;
+  }
+
+  .grafico-lote-nombre {
+    font-size: 13px;
+  }
+
+  .grafico-lote-barra {
+    height: 22px;
+  }
+
+  .grafico-lote-monto {
+    font-size: 11px;
+    right: 8px;
+  }
+
+  .total-real-doble {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+
+/* 📱 CELULAR PEQUEÑO (≤ 600px) */
 @media (max-width: 600px) {
   .total-real-destacado {
     flex-direction: column;
@@ -1110,512 +785,522 @@
   }
 }
 
-/* ═══════════════════════════════════════════
-   DOBLE TOTAL EN CADA CARD DE LOTE
-   ═══════════════════════════════════════════ */
-.resumen-lote-totales {
-  display: flex;
-  gap: 10px;
-  flex-shrink: 0;
-}
-
-@media (max-width: 768px) {
-  .resumen-lote-totales {
-    flex-direction: column;
-    width: 100%;
-  }
-}
-
-.resumen-lote-total {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  padding: 10px 16px;
-  background: #FFFFFF;
-  border-radius: 12px;
-  border: 2px solid;
-  flex-shrink: 0;
-}
-
-.resumen-lote-total.total-naranja {
-  border-color: #FFB74D;
-}
-
-.resumen-lote-total.total-verde {
-  border-color: #7ED9A8;
-}
-
-.resumen-lote-total span {
-  font-size: 10px;
-  color: #8B7A66;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 700;
-}
-
-.resumen-lote-total strong {
-  font-size: 18px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-}
-
-@media (max-width: 768px) {
-  .resumen-lote-total {
-    align-items: flex-start;
-    width: 100%;
-  }
-
-  .resumen-lote-total strong {
-    font-size: 16px;
-  }
-}
-
-/* ═══════════════════════════════════════════
-   RESTO DE ESTILOS DE RESUMEN-LOTE
-   ═══════════════════════════════════════════ */
-.resumen-lotes-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.resumen-lote-card {
-  background: #FFFFFF;
-  border-radius: 18px;
-  border: 2px solid #F0EAD8;
-  overflow: hidden;
-  transition: all 0.25s ease;
-}
-
-.resumen-lote-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-}
-
-.resumen-lote-card.resumen-positivo {
-  border-left: 6px solid #2A9D8F;
-}
-
-.resumen-lote-card.resumen-negativo {
-  border-left: 6px solid #F26B7A;
-}
-
-.resumen-lote-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 18px 22px;
-  background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
-  border-bottom: 2px dashed #F0EAD8;
-  flex-wrap: wrap;
-}
-
-.resumen-lote-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.resumen-lote-info strong {
-  color: #5C3A21;
-  font-size: 17px;
-  font-weight: 700;
-}
-
-.resumen-lote-info small {
-  color: #8B7A66;
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.resumen-lote-desglose {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  padding: 18px 22px;
-}
-
-@media (max-width: 900px) {
-  .resumen-lote-desglose {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.desglose-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  background: #FFF8E7;
-  border-radius: 12px;
-  border-left: 3px solid #FFD93D;
-}
-
-.desglose-label {
-  font-size: 11px;
-  color: #8B7A66;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-}
-
-.desglose-valor {
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.resumen-lote-gastos {
-  padding: 0 22px 18px;
-}
-
-.gastos-titulo {
-  font-size: 12px;
-  color: #8B7A66;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 700;
-  margin-bottom: 10px;
-}
-
-.gastos-lista {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px;
-}
-
-.gasto-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: #FFE5E8;
-  border-radius: 10px;
-  font-size: 13px;
-}
-
-.gasto-concepto {
-  color: #5C3A21;
-  font-weight: 600;
-}
-
-.gasto-valor {
-  color: #F26B7A;
-  font-weight: 800;
-  font-size: 13px;
-}
-
-.resumen-lote-extra {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  padding: 12px 22px;
-  background: #FAF6EE;
-  border-top: 2px dashed #F0EAD8;
-  font-size: 13px;
-  color: #5C3A21;
-}
-
-.resumen-lote-extra strong {
-  font-weight: 800;
-}
-
-@media (max-width: 768px) {
-  .resumen-lote-header {
-    padding: 14px 16px;
-    flex-direction: column;
-  }
-
-  .resumen-lote-info strong {
+/* 📱 CELULAR PEQUEÑO (≤ 480px) */
+@media (max-width: 480px) {
+  .deuda-card-info strong {
     font-size: 15px;
   }
 
-  .resumen-lote-desglose {
-    grid-template-columns: 1fr 1fr;
-    padding: 14px 16px;
-    gap: 8px;
+  .deuda-valor {
+    font-size: 22px;
   }
 
-  .desglose-valor {
+  .deuda-card-avatar {
+    width: 42px;
+    height: 42px;
+    font-size: 18px;
+  }
+
+  .deuda-info-item strong {
     font-size: 14px;
   }
 
-  .resumen-lote-gastos {
-    padding: 0 16px 14px;
-  }
-
-  .gastos-lista {
-    grid-template-columns: 1fr;
-  }
-
-  .resumen-lote-extra {
-    padding: 10px 16px;
+  .btn-accion-deuda {
     font-size: 12px;
-    gap: 10px;
+    padding: 10px 12px;
   }
 }
+
 /* ═══════════════════════════════════════════
-   RESUMEN FINANCIERO POR LOTE
+   RESUMEN GLOBAL DE DEUDAS
    ═══════════════════════════════════════════ */
-.resumen-lotes-lista {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.resumen-lote-card {
-  background: #FFFFFF;
-  border-radius: 18px;
-  border: 2px solid #F0EAD8;
-  overflow: hidden;
-  transition: all 0.25s ease;
-}
-
-.resumen-lote-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
-}
-
-.resumen-lote-card.resumen-positivo {
-  border-left: 6px solid #2A9D8F;
-}
-
-.resumen-lote-card.resumen-negativo {
-  border-left: 6px solid #F26B7A;
-}
-
-.resumen-lote-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 18px 22px;
-  background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
+.deudas-resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 22px;
+  padding-bottom: 20px;
   border-bottom: 2px dashed #F0EAD8;
-  flex-wrap: wrap;
 }
 
-.resumen-lote-info {
-  flex: 1;
+.deuda-resumen-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  min-width: 0;
+  padding: 14px 16px;
+  background: #FFF8E7;
+  border-radius: 14px;
+  border-left: 4px solid #FFD93D;
 }
 
-.resumen-lote-info strong {
-  color: #5C3A21;
-  font-size: 17px;
-  font-weight: 700;
+.deuda-resumen-item.destacado-rojo {
+  background: linear-gradient(135deg, #FFE5E8, #FFD3D8);
+  border-left-color: #F26B7A;
 }
 
-.resumen-lote-info small {
-  color: #8B7A66;
-  font-size: 12px;
-  font-weight: 500;
+.deuda-resumen-item.destacado-verde {
+  background: linear-gradient(135deg, #E8F9F0, #D3F5E0);
+  border-left-color: #2A9D8F;
 }
 
-.resumen-lote-total {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 4px;
-  padding: 10px 16px;
-  background: #FFFFFF;
-  border-radius: 12px;
-  border: 2px solid #FFD93D;
-  flex-shrink: 0;
+.deuda-resumen-item.destacado-amarillo {
+  background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
+  border-left-color: #FFB74D;
 }
 
-.resumen-lote-total span {
+.deuda-resumen-label {
   font-size: 11px;
   color: #8B7A66;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
-.resumen-lote-total strong {
+.deuda-resumen-valor {
   font-size: 22px;
   font-weight: 800;
+  color: #5C3A21;
   letter-spacing: -0.5px;
 }
 
-.resumen-lote-desglose {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
-  padding: 18px 22px;
-}
-
-@media (max-width: 900px) {
-  .resumen-lote-desglose {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-.desglose-item {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 12px 14px;
-  background: #FFF8E7;
-  border-radius: 12px;
-  border-left: 3px solid #FFD93D;
-}
-
-.desglose-label {
+.deuda-resumen-item small {
   font-size: 11px;
   color: #8B7A66;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
+  font-weight: 500;
 }
 
-.desglose-valor {
-  font-size: 16px;
-  font-weight: 800;
-}
-
-.resumen-lote-gastos {
-  padding: 0 22px 18px;
-}
-
-.gastos-titulo {
+/* ═══════════════════════════════════════════
+   BADGES DE PAGO Y URGENCIA
+   ═══════════════════════════════════════════ */
+.badge-pago {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
   font-size: 12px;
-  color: #8B7A66;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  font-weight: 800;
+}
+
+.badge-pago-verde {
+  background: #D3F5E0;
+  color: #1E7A4C;
+}
+
+.badge-pago-amarillo {
+  background: #FFF3C4;
+  color: #9C7A00;
+}
+
+.badge-pago-rojo {
+  background: #FFD3D3;
+  color: #9C1E1E;
+}
+
+.badge-urgencia {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 11px;
   font-weight: 700;
-  margin-bottom: 10px;
 }
 
-.gastos-lista {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 8px;
+.badge-reciente {
+  background: #D3F5E0;
+  color: #1E7A4C;
 }
 
-.gasto-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: #FFE5E8;
-  border-radius: 10px;
-  font-size: 13px;
+.badge-medio {
+  background: #FFE5B8;
+  color: #9C5A00;
 }
 
-.gasto-concepto {
-  color: #5C3A21;
-  font-weight: 600;
+.badge-urgente {
+  background: #FFD3D3;
+  color: #9C1E1E;
+  animation: pulso 2s infinite;
 }
 
-.gasto-valor {
-  color: #F26B7A;
-  font-weight: 800;
-  font-size: 13px;
-}
-
-.resumen-lote-extra {
-  display: flex;
-  gap: 20px;
-  flex-wrap: wrap;
-  padding: 12px 22px;
-  background: #FAF6EE;
-  border-top: 2px dashed #F0EAD8;
-  font-size: 13px;
+.badge-sin-datos {
+  background: #E5D5B7;
   color: #5C3A21;
 }
 
-.resumen-lote-extra strong {
-  font-weight: 800;
-}
-
-@media (max-width: 768px) {
-  .resumen-lote-header {
-    padding: 14px 16px;
-    flex-direction: column;
+@keyframes pulso {
+  0%,
+  100% {
+    opacity: 1;
   }
-
-  .resumen-lote-total {
-    align-items: flex-start;
-    width: 100%;
-  }
-
-  .resumen-lote-info strong {
-    font-size: 15px;
-  }
-
-  .resumen-lote-desglose {
-    grid-template-columns: 1fr 1fr;
-    padding: 14px 16px;
-    gap: 8px;
-  }
-
-  .desglose-valor {
-    font-size: 14px;
-  }
-
-  .resumen-lote-gastos {
-    padding: 0 16px 14px;
-  }
-
-  .gastos-lista {
-    grid-template-columns: 1fr;
-  }
-
-  .resumen-lote-extra {
-    padding: 10px 16px;
-    font-size: 12px;
-    gap: 10px;
+  50% {
+    opacity: 0.6;
   }
 }
 
 /* ═══════════════════════════════════════════
-   SCROLL EN TABLA DETALLE DE LOTES
+   URGENCIA EN CARD MOBILE
    ═══════════════════════════════════════════ */
-.tabla-reportes-desktop .table-wrapper {
-  max-height: 600px;
-  overflow-y: auto;
-  overflow-x: auto;
-  border-radius: 12px;
+.deuda-card-urgencia {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5C3A21;
+  border-bottom: 2px dashed #F0EAD8;
+}
+
+.deuda-card-urgencia strong {
+  font-weight: 800;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE DEUDAS
+   ═══════════════════════════════════════════ */
+@media (max-width: 768px) {
+  .deudas-resumen {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .deuda-resumen-valor {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .deudas-resumen {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   ESTADO DE CARTERA
+   ═══════════════════════════════════════════ */
+.cartera-panel {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFF8E7 100%);
+  border: 2px solid #FFD93D;
+}
+
+.cartera-scope {
+  color: #8B7A66;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.cartera-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 14px;
+}
+
+.cartera-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  background: #FFF8E7;
+  border-radius: 14px;
+  border-left: 4px solid #FFD93D;
+  transition: transform 0.2s ease;
+}
+
+.cartera-item:hover {
+  transform: translateY(-3px);
+}
+
+.cartera-item.cartera-rojo {
+  background: linear-gradient(135deg, #FFE5E8, #FFD3D8);
+  border-left-color: #F26B7A;
+}
+
+.cartera-item.cartera-verde {
+  background: linear-gradient(135deg, #E8F9F0, #D3F5E0);
+  border-left-color: #2A9D8F;
+}
+
+.cartera-item.cartera-amarillo {
+  background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
+  border-left-color: #FFB74D;
+}
+
+.cartera-label {
+  font-size: 11px;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
+}
+
+.cartera-valor {
+  font-size: 22px;
+  font-weight: 800;
+  color: #5C3A21;
+  letter-spacing: -0.5px;
+}
+
+.cartera-item small {
+  font-size: 11px;
+  color: #8B7A66;
+  font-weight: 500;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .cartera-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .cartera-valor {
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cartera-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════════════════════════════════
+   RESUMEN GENERAL REDISEÑADO
+   ═══════════════════════════════════════════ */
+.seccion-resumen-general {
+  background: linear-gradient(135deg, #FFFFFF 0%, #FFFDF7 100%);
   border: 2px solid #F0EAD8;
+  border-radius: 22px;
+  padding: 28px;
+  margin-bottom: 25px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.04);
 }
 
-.tabla-reportes-desktop .data-table {
-  min-width: 1200px;
+.seccion-resumen-general .seccion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 22px;
+  padding-bottom: 16px;
+  border-bottom: 2px dashed #F0EAD8;
 }
 
-.tabla-reportes-desktop .data-table thead {
-  position: sticky;
-  top: 0;
-  z-index: 5;
+.seccion-resumen-general .seccion-header h2 {
+  font-family: 'Pacifico', cursive;
+  font-size: 26px;
+  color: #5C3A21;
+  margin: 0 0 4px 0;
+  font-weight: 400;
 }
 
-.tabla-reportes-desktop .data-table thead th {
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+.seccion-resumen-general .seccion-subtitulo {
+  color: #8B7A66;
+  font-size: 13px;
+  margin: 0;
+}
+
+.seccion-resumen-general .seccion-subtitulo strong {
+  color: #2A9D8F;
+  font-weight: 800;
+}
+
+/* ── Bloques con título ── */
+.resumen-bloque {
+  margin-bottom: 22px;
+}
+
+.resumen-bloque:last-of-type {
+  margin-bottom: 0;
+}
+
+.resumen-bloque-titulo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  color: #8B7A66;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 12px;
+  padding-left: 4px;
+}
+
+.resumen-bloque-icon {
+  font-size: 16px;
+  line-height: 1;
+}
+
+/* ── Grids internos: menos margen ── */
+.seccion-resumen-general .stats-grid {
+  margin-bottom: 0;
+  gap: 14px;
+}
+
+.seccion-resumen-general .stats-grid + .stats-grid {
+  margin-top: 0;
+}
+
+/* ── Totales destacados ── */
+.resumen-totales {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 2px dashed #F0EAD8;
+}
+
+.resumen-total-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px;
+  border-radius: 18px;
+  border: 3px solid;
+  flex-wrap: wrap;
+  transition: transform 0.25s ease;
+}
+
+.resumen-total-card:hover {
+  transform: translateY(-3px);
+}
+
+.resumen-total-icon {
+  font-size: 28px;
+  width: 52px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.7);
+  border-radius: 14px;
+  flex-shrink: 0;
+}
+
+.resumen-total-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 120px;
+}
+
+.resumen-total-card .total-real-label {
+  font-size: 12px;
+  font-weight: 800;
+  color: #5C3A21;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.resumen-total-card .total-real-info small,
+.resumen-total-card .resumen-total-info small {
+  font-size: 11px;
+  color: #8B7A66;
+  font-weight: 500;
+}
+
+.resumen-total-card .total-real-valor {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -1px;
+  white-space: nowrap;
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+  .resumen-totales {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .seccion-resumen-general {
+    padding: 20px 18px;
+    border-radius: 18px;
+  }
+
+  .seccion-resumen-general .seccion-header h2 {
+    font-size: 20px;
+  }
+
+  .seccion-resumen-general .seccion-subtitulo {
+    font-size: 12px;
+  }
+
+  .resumen-bloque-titulo {
+    font-size: 11px;
+    margin-bottom: 10px;
+  }
+
+  .resumen-bloque-icon {
+    font-size: 14px;
+  }
+
+  .seccion-resumen-general .stats-grid {
+    gap: 10px;
+  }
+
+  .resumen-total-card {
+    padding: 16px 18px;
+    gap: 12px;
+  }
+
+  .resumen-total-icon {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+
+  .resumen-total-card .total-real-valor {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .seccion-resumen-general {
+    padding: 16px 14px;
+  }
+
+  .resumen-total-info {
+    min-width: 0;
+  }
+
+  .resumen-total-card .total-real-valor {
+    font-size: 20px;
+  }
+}
+
+/* Botón "Ver todos" dentro del header del resumen */
+.seccion-resumen-general .seccion-header .btn-ver-todos {
+  align-self: flex-end;
   background: #FFF8E7;
+  color: #2A9D8F;
+  border: 2px solid #FFD93D;
+  padding: 10px 16px;
+  border-radius: 12px;
+  font-family: 'Poppins', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  white-space: nowrap;
 }
 
-.tabla-reportes-desktop .table-wrapper::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+.seccion-resumen-general .seccion-header .btn-ver-todos:hover {
+  background: #FFD93D;
+  color: #5C3A21;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(255, 217, 61, 0.35);
 }
 
-.tabla-reportes-desktop .table-wrapper::-webkit-scrollbar-track {
-  background: #FFF8E7;
-  border-radius: 10px;
-}
+@media (max-width: 768px) {
+  .seccion-resumen-general .seccion-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
 
-.tabla-reportes-desktop .table-wrapper::-webkit-scrollbar-thumb {
-  background: #E5D5B7;
-  border-radius: 10px;
-}
-
-.tabla-reportes-desktop .table-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #F26B7A;
+  .seccion-resumen-general .seccion-header .btn-ver-todos {
+    width: 100%;
+    text-align: center;
+  }
 }
