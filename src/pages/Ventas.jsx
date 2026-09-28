@@ -13,6 +13,7 @@ import {
 import { db } from '../firebase';
 import TopBar from '../components/TopBar';
 import Button from '../components/Button';
+import ClienteSelector from '../components/ClienteSelector';
 import '../styles/Modulos.css';
 
 const ENTREGAS = ['Pendiente', 'Entregado'];
@@ -53,6 +54,9 @@ function Ventas({ usuario, onAbrirSidebar }) {
 
   // 🍚 Filtro por lote
   const [filtroLote, setFiltroLote] = useState('todos');
+
+  // 🚚 Filtro por estado de entrega
+  const [filtroEntrega, setFiltroEntrega] = useState('todos');
 
   // 🍚 Dropdown custom
   const [dropdownAbierto, setDropdownAbierto] = useState(false);
@@ -150,7 +154,15 @@ function Ventas({ usuario, onAbrirSidebar }) {
     );
   };
 
-  // 🔍 Filtrar ventas según búsqueda + lote
+  // 🎯 Ventas del lote actualmente filtrado (sin aplicar entrega ni búsqueda) —
+  // sirve de base para los conteos/resumen de entrega, así respetan el lote elegido
+  const ventasDelLoteFiltrado = ventas.filter((v) => {
+    if (filtroLote === 'todos') return true;
+    if (filtroLote === 'sin-lote') return !v.loteId;
+    return v.loteId === filtroLote;
+  });
+
+  // 🔍 Filtrar ventas según búsqueda + lote + entrega
   const ventasFiltradas = ventas.filter((v) => {
     if (filtroLote !== 'todos') {
       if (filtroLote === 'sin-lote') {
@@ -158,6 +170,11 @@ function Ventas({ usuario, onAbrirSidebar }) {
       } else if (v.loteId !== filtroLote) {
         return false;
       }
+    }
+
+    if (filtroEntrega !== 'todos') {
+      const entregaVenta = v.entrega || 'Pendiente';
+      if (entregaVenta !== filtroEntrega) return false;
     }
 
     if (!busqueda.trim()) return true;
@@ -216,7 +233,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
   useEffect(() => {
     setPaginaActual(1);
     setMostrarEnMobile(20);
-  }, [busqueda, filtroLote]);
+  }, [busqueda, filtroLote, filtroEntrega]);
 
   const irPagina = (n) => {
     if (n < 1 || n > totalPaginas) return;
@@ -335,8 +352,10 @@ function Ventas({ usuario, onAbrirSidebar }) {
       await deleteDoc(doc(db, 'ventas', id));
       setSeleccionados(seleccionados.filter((s) => s !== id));
     } catch (err) {
-      console.error(err);
-      setError('No se pudo eliminar');
+      console.error('Error al eliminar venta:', err);
+      setError(
+        `No se pudo eliminar (${err.code || 'error'}): ${err.message}`
+      );
     }
   };
 
@@ -349,8 +368,10 @@ function Ventas({ usuario, onAbrirSidebar }) {
       );
       setSeleccionados([]);
     } catch (err) {
-      console.error(err);
-      setError('No se pudieron eliminar las seleccionadas');
+      console.error('Error al eliminar ventas seleccionadas:', err);
+      setError(
+        `No se pudieron eliminar las seleccionadas (${err.code || 'error'}): ${err.message}`
+      );
     }
   };
 
@@ -378,6 +399,10 @@ function Ventas({ usuario, onAbrirSidebar }) {
   const totalVendido = ventasFiltradas.reduce((s, v) => s + (v.total || 0), 0);
   const totalPagado  = ventasFiltradas.reduce((s, v) => s + (v.pagado || 0), 0);
   const totalSaldo   = ventasFiltradas.reduce((s, v) => s + (v.saldo || 0), 0);
+
+  // 🚚 Conteos y totales por estado de entrega (respetando el lote filtrado, no solo la página)
+  const ventasPendientesEntrega = ventasDelLoteFiltrado.filter((v) => (v.entrega || 'Pendiente') === 'Pendiente');
+  const ventasEntregadas = ventasDelLoteFiltrado.filter((v) => v.entrega === 'Entregado');
 
   const totalSelVendido = ventas
     .filter((v) => seleccionados.includes(v.id))
@@ -557,9 +582,36 @@ function Ventas({ usuario, onAbrirSidebar }) {
                     </div>
                   )}
                 </div>
+
+                <div className="filtro-entrega-ventas" style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    type="button"
+                    className={`filtro-entrega-btn ${filtroEntrega === 'todos' ? 'activa' : ''}`}
+                    onClick={() => setFiltroEntrega('todos')}
+                    title="Mostrar todas"
+                  >
+                    📦 Todas ({ventasDelLoteFiltrado.length})
+                  </button>
+                  <button
+                    type="button"
+                    className={`filtro-entrega-btn ${filtroEntrega === 'Pendiente' ? 'activa' : ''}`}
+                    onClick={() => setFiltroEntrega('Pendiente')}
+                    title="Ventas que aún hacen falta entregar"
+                  >
+                    🚚 Por entregar ({ventasPendientesEntrega.length})
+                  </button>
+                  <button
+                    type="button"
+                    className={`filtro-entrega-btn ${filtroEntrega === 'Entregado' ? 'activa' : ''}`}
+                    onClick={() => setFiltroEntrega('Entregado')}
+                    title="Ventas ya entregadas"
+                  >
+                    ✅ Entregadas ({ventasEntregadas.length})
+                  </button>
+                </div>
               </div>
 
-              {(busqueda || filtroLote !== 'todos') && (
+              {(busqueda || filtroLote !== 'todos' || filtroEntrega !== 'todos') && (
                 <div className="buscador-resultados">
                   {ventasFiltradas.length === 0 ? (
                     <span style={{ color: '#F26B7A' }}>
@@ -570,6 +622,11 @@ function Ventas({ usuario, onAbrirSidebar }) {
                           {' '}en el lote <strong>{nombreLoteFiltro}</strong>
                         </>
                       )}
+                      {filtroEntrega !== 'todos' && (
+                        <>
+                          {' '}con estado <strong>{filtroEntrega}</strong>
+                        </>
+                      )}
                     </span>
                   ) : (
                     <span>
@@ -578,6 +635,11 @@ function Ventas({ usuario, onAbrirSidebar }) {
                       {filtroLote !== 'todos' && (
                         <>
                           {' '}· Lote: <strong>{nombreLoteFiltro}</strong>
+                        </>
+                      )}
+                      {filtroEntrega !== 'todos' && (
+                        <>
+                          {' '}· Entrega: <strong>{filtroEntrega}</strong>
                         </>
                       )}
                       {busqueda && (
@@ -608,19 +670,11 @@ function Ventas({ usuario, onAbrirSidebar }) {
                   <div className="form-grid">
                     <div className="form-field form-field-full">
                       <label>Cliente</label>
-                      <select
+                      <ClienteSelector
+                        clientes={clientes}
                         value={nuevo.clienteId}
-                        onChange={(e) =>
-                          setNuevo({ ...nuevo, clienteId: e.target.value })
-                        }
-                      >
-                        <option value="">Selecciona un cliente</option>
-                        {clientes.map((c) => (
-                          <option key={c.id} value={c.id}>
-                            {c.nombre} · {c.telefono}
-                          </option>
-                        ))}
-                      </select>
+                        onChange={(id) => setNuevo({ ...nuevo, clienteId: id })}
+                      />
                     </div>
 
                     <div className="form-field form-field-full">
@@ -711,6 +765,13 @@ function Ventas({ usuario, onAbrirSidebar }) {
                         min="0"
                         step="0.01"
                         value={nuevo.abono}
+                        onFocus={(e) => {
+                          e.target.placeholder = '';
+                          if (Number(nuevo.abono) === 0) setNuevo({ ...nuevo, abono: '' });
+                        }}
+                        onBlur={(e) => {
+                          e.target.placeholder = '0';
+                        }}
                         onChange={(e) =>
                           setNuevo({ ...nuevo, abono: e.target.value })
                         }
@@ -1200,19 +1261,11 @@ function Ventas({ usuario, onAbrirSidebar }) {
               <div className="form-grid">
                 <div className="form-field form-field-full">
                   <label>Cliente</label>
-                  <select
+                  <ClienteSelector
+                    clientes={clientes}
                     value={editando.clienteId}
-                    onChange={(e) =>
-                      setEditando({ ...editando, clienteId: e.target.value })
-                    }
-                  >
-                    <option value="">Selecciona un cliente</option>
-                    {clientes.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.nombre} · {c.telefono}
-                      </option>
-                    ))}
-                  </select>
+                    onChange={(id) => setEditando({ ...editando, clienteId: id })}
+                  />
                 </div>
 
                 <div className="form-field form-field-full">
@@ -1278,6 +1331,14 @@ function Ventas({ usuario, onAbrirSidebar }) {
                     min="0"
                     step="0.01"
                     value={editando.abono}
+                    placeholder="0"
+                    onFocus={(e) => {
+                      e.target.placeholder = '';
+                      if (Number(editando.abono) === 0) setEditando({ ...editando, abono: '' });
+                    }}
+                    onBlur={(e) => {
+                      e.target.placeholder = '0';
+                    }}
                     onChange={(e) =>
                       setEditando({ ...editando, abono: e.target.value })
                     }

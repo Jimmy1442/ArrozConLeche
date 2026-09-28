@@ -81,8 +81,14 @@
   margin-bottom: 18px;
 }
 
+.form-grid > * {
+  min-width: 0;
+}
+
 .form-grid input,
 .form-grid select {
+  width: 100%;
+  max-width: 100%;
   padding: 12px 16px;
   border: 2px solid #E5D5B7;
   border-radius: 12px;
@@ -91,6 +97,12 @@
   background: #FFFFFF;
   color: #5C3A21;
   transition: all 0.3s ease;
+}
+
+.form-grid select {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .form-grid input:focus,
@@ -105,6 +117,7 @@
   display: flex;
   flex-direction: column;
   gap: 6px;
+  min-width: 0;
 }
 
 .form-field label {
@@ -115,6 +128,8 @@
 
 .form-field input,
 .form-field select {
+  width: 100%;
+  max-width: 100%;
   padding: 12px 16px;
   border: 2px solid #E5D5B7;
   border-radius: 12px;
@@ -123,6 +138,12 @@
   background: #FFFFFF;
   color: #5C3A21;
   transition: all 0.3s ease;
+}
+
+.form-field select {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .form-field input:focus,
@@ -1984,6 +2005,38 @@
 /* ═══════════════════════════════════════════
    FILTRO POR LOTE - Dropdown custom
    ═══════════════════════════════════════════ */
+.filtro-entrega-ventas {
+  flex-wrap: wrap;
+}
+
+.filtro-entrega-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 52px;
+  padding: 0 14px;
+  background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
+  border: 2px solid #FFD93D;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: #5C3A21;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.filtro-entrega-btn:hover {
+  background: rgba(255, 217, 61, 0.2);
+}
+
+.filtro-entrega-btn.activa {
+  border-color: #F26B7A;
+  background: linear-gradient(135deg, #FFE8E8, #FFD9D9);
+  box-shadow: 0 0 0 4px rgba(242, 107, 122, 0.12);
+}
+
 .filtro-lote-ventas {
   position: relative;
   background: linear-gradient(135deg, #FFF8E7, #FFF0D4);
@@ -2314,12 +2367,14 @@
 .estado-auto-box {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 10px;
   padding: 12px 14px;
   border-radius: 10px;
   border: 2px solid;
   font-weight: 700;
   transition: all 0.25s ease;
+  max-width: 100%;
 }
 
 .estado-auto-pagado {
@@ -2357,4 +2412,144 @@
   .estado-auto-hint {
     display: none;
   }
+}
+/* ═══════════════════════════════════════════
+   SELECTOR DE CLIENTE CON BUSCADOR
+   ═══════════════════════════════════════════ */
+.cliente-selector {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+}
+
+.cliente-selector-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 16px;
+  border: 2px solid #E5D5B7;
+  border-radius: 12px;
+  background: #FFFFFF;
+  color: #5C3A21;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cliente-selector-trigger.abierto,
+.cliente-selector-trigger:focus {
+  outline: none;
+  border-color: #F26B7A;
+  box-shadow: 0 0 0 4px rgba(242, 107, 122, 0.15);
+}
+
+.cliente-selector-texto {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.cliente-selector-texto.placeholder {
+  color: #8B7A66;
+}
+
+.cliente-selector-flecha {
+  font-size: 10px;
+  color: #8B7A66;
+}
+
+.cliente-selector-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 50;
+  background: #FFFFFF;
+  border: 2px solid #F26B7A;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+}
+
+.cliente-selector-buscar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: #FFF8E7;
+  border-bottom: 1px solid #E5D5B7;
+}
+
+.cliente-selector-buscar input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #5C3A21;
+}
+
+.cliente-selector-buscar button {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: #8B7A66;
+}
+
+.cliente-selector-lista {
+  max-height: 240px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.cliente-selector-opcion {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 10px 14px;
+  border: none;
+  border-bottom: 1px solid #F5F0E6;
+  background: #FFFFFF;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  color: #5C3A21;
+  text-align: left;
+  cursor: pointer;
+  position: relative;
+}
+
+.cliente-selector-opcion small {
+  color: #8B7A66;
+  font-size: 12px;
+}
+
+.cliente-selector-opcion:hover,
+.cliente-selector-opcion.activa {
+  background: #FFF0D4;
+}
+
+.cliente-selector-opcion .check {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #2A9D8F;
+  font-weight: 800;
+}
+
+.cliente-selector-vacio {
+  padding: 14px;
+  text-align: center;
+  color: #F26B7A;
+  font-size: 13px;
 }
