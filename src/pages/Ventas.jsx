@@ -58,6 +58,9 @@ function Ventas({ usuario, onAbrirSidebar }) {
   // 🚚 Filtro por estado de entrega
   const [filtroEntrega, setFiltroEntrega] = useState('todos');
 
+  // 💵 Filtro por pago (solo los que no han pagado completo)
+  const [soloSinPagar, setSoloSinPagar] = useState(false);
+
   // 🍚 Dropdown custom
   const [dropdownAbierto, setDropdownAbierto] = useState(false);
   const dropdownRef = useRef(null);
@@ -177,6 +180,8 @@ function Ventas({ usuario, onAbrirSidebar }) {
       if (entregaVenta !== filtroEntrega) return false;
     }
 
+    if (soloSinPagar && v.estado === 'Pagado') return false;
+
     if (!busqueda.trim()) return true;
 
     const busq = busqueda.toLowerCase().trim();
@@ -233,7 +238,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
   useEffect(() => {
     setPaginaActual(1);
     setMostrarEnMobile(20);
-  }, [busqueda, filtroLote, filtroEntrega]);
+  }, [busqueda, filtroLote, filtroEntrega, soloSinPagar]);
 
   const irPagina = (n) => {
     if (n < 1 || n > totalPaginas) return;
@@ -403,6 +408,7 @@ function Ventas({ usuario, onAbrirSidebar }) {
   // 🚚 Conteos y totales por estado de entrega (respetando el lote filtrado, no solo la página)
   const ventasPendientesEntrega = ventasDelLoteFiltrado.filter((v) => (v.entrega || 'Pendiente') === 'Pendiente');
   const ventasEntregadas = ventasDelLoteFiltrado.filter((v) => v.entrega === 'Entregado');
+  const ventasSinPagar = ventasDelLoteFiltrado.filter((v) => v.estado !== 'Pagado');
 
   const totalSelVendido = ventas
     .filter((v) => seleccionados.includes(v.id))
@@ -608,10 +614,18 @@ function Ventas({ usuario, onAbrirSidebar }) {
                   >
                     ✅ Entregadas ({ventasEntregadas.length})
                   </button>
+                  <button
+                    type="button"
+                    className={`filtro-entrega-btn ${soloSinPagar ? 'activa' : ''}`}
+                    onClick={() => setSoloSinPagar(!soloSinPagar)}
+                    title="Ventas con pago pendiente"
+                  >
+                    ⏳ Sin pagar ({ventasSinPagar.length})
+                  </button>
                 </div>
               </div>
 
-              {(busqueda || filtroLote !== 'todos' || filtroEntrega !== 'todos') && (
+              {(busqueda || filtroLote !== 'todos' || filtroEntrega !== 'todos' || soloSinPagar) && (
                 <div className="buscador-resultados">
                   {ventasFiltradas.length === 0 ? (
                     <span style={{ color: '#F26B7A' }}>
@@ -627,6 +641,11 @@ function Ventas({ usuario, onAbrirSidebar }) {
                           {' '}con estado <strong>{filtroEntrega}</strong>
                         </>
                       )}
+                      {soloSinPagar && (
+                        <>
+                          {' '}sin pagar
+                        </>
+                      )}
                     </span>
                   ) : (
                     <span>
@@ -640,6 +659,11 @@ function Ventas({ usuario, onAbrirSidebar }) {
                       {filtroEntrega !== 'todos' && (
                         <>
                           {' '}· Entrega: <strong>{filtroEntrega}</strong>
+                        </>
+                      )}
+                      {soloSinPagar && (
+                        <>
+                          {' '}· <strong>Sin pagar</strong>
                         </>
                       )}
                       {busqueda && (
@@ -776,6 +800,16 @@ function Ventas({ usuario, onAbrirSidebar }) {
                           setNuevo({ ...nuevo, abono: e.target.value })
                         }
                       />
+                      <button
+                        type="button"
+                        className="btn-pagado-rapido"
+                        disabled={totalFormulario <= 0}
+                        onClick={() =>
+                          setNuevo({ ...nuevo, abono: String(totalFormulario) })
+                        }
+                      >
+                        ✅ Pagado completo (${totalFormulario.toLocaleString('es-CO')})
+                      </button>
                       <small className="hint">
                         💡 Cuánto te pagó (puede ser menos del total)
                       </small>
@@ -1343,6 +1377,16 @@ function Ventas({ usuario, onAbrirSidebar }) {
                       setEditando({ ...editando, abono: e.target.value })
                     }
                   />
+                  <button
+                    type="button"
+                    className="btn-pagado-rapido"
+                    disabled={totalEditando <= 0}
+                    onClick={() =>
+                      setEditando({ ...editando, abono: String(totalEditando) })
+                    }
+                  >
+                    ✅ Pagado completo (${totalEditando.toLocaleString('es-CO')})
+                  </button>
                   <small className="hint">
                     💡 Edítalo cuando el cliente pague más
                   </small>

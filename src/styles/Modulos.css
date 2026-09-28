@@ -2553,3 +2553,28 @@
   color: #F26B7A;
   font-size: 13px;
 }
+
+/* Botón rápido "Pagado completo" en el abono */
+.btn-pagado-rapido {
+  margin-top: 8px;
+  padding: 10px 14px;
+  width: 100%;
+  border: 2px solid #7ED9A8;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #E8F9F0, #D3F5E0);
+  color: #1E7A4C;
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-pagado-rapido:hover:not(:disabled) {
+  background: #C2F0D5;
+}
+
+.btn-pagado-rapido:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
