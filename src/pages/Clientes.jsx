@@ -13,6 +13,7 @@ import {
 import { db } from '../firebase';
 import TopBar from '../components/TopBar';
 import Button from '../components/Button';
+import CobranzaIA from '../components/CobranzaIA';
 import '../styles/Modulos.css';
 
 function Clientes({ usuario, onAbrirSidebar }) {
@@ -181,6 +182,8 @@ function Clientes({ usuario, onAbrirSidebar }) {
               </Button>
             </div>
           </div>
+
+          {!mostrarForm && <CobranzaIA />}
 
           {error && <div className="error-msg">{error}</div>}
 

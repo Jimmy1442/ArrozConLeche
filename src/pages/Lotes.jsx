@@ -13,6 +13,7 @@ import {
 import { db } from '../firebase';
 import TopBar from '../components/TopBar';
 import Button from '../components/Button';
+import LotePorTexto from '../components/LotePorTexto';
 import '../styles/Lotes.css';
 
 const UNIDADES = [
@@ -384,6 +385,42 @@ function Lotes({ usuario, onAbrirSidebar }) {
     ventasEdit.pagado + baseEdit - gastosEdit.total - costoTotalEdit;
 
   // ➕ Agregar ingrediente (formulario de creación)
+  // ✨ IA: prellena el formulario de lote con el borrador interpretado (NO guarda)
+  const aplicarBorrador = (b) => {
+    const avisos = [];
+    const fecha = b.fecha || hoyISO();
+
+    const ingredientes = (b.ingredientes || []).map((i) => ({
+      id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+      nombre: i.nombre,
+      cantidad: Number(i.cantidad) || 0,
+      unidad: i.unidad || 'unidades',
+      valorUnitario: i.valorUnitario != null ? Number(i.valorUnitario) : 0,
+      editarPrecio: i.valorUnitario == null // ✨ mantiene la casilla de precio visible
+    }));
+
+    const sinPrecio = ingredientes.filter((i) => i.editarPrecio).map((i) => i.nombre);
+    if (sinPrecio.length) {
+      avisos.push(`Falta el precio de: ${sinPrecio.join(', ')} (escribe el precio en la casilla roja de la lista).`);
+    }
+    if (!ingredientes.length) avisos.push('No identifiqué ingredientes, agrégalos manualmente.');
+    if (!b.cantidadProducida) avisos.push('Falta la cantidad producida.');
+    if (b.valorUnitario == null) avisos.push('No dijiste el precio de venta por unidad.');
+
+    setNuevo({
+      nombre: b.nombre?.trim() || `Lote ${formatearFecha(fecha)}`,
+      fecha,
+      presentacion: b.presentacion || '',
+      cantidadProducida: b.cantidadProducida != null ? String(b.cantidadProducida) : '',
+      valorUnitario: b.valorUnitario != null ? String(b.valorUnitario) : '',
+      perdidas: b.perdidas != null ? String(b.perdidas) : '',
+      base: b.base != null ? String(b.base) : '',
+      ingredientes
+    });
+    setMostrarForm(true);
+    return avisos;
+  };
+
   const agregarIngredienteTemp = () => {
     if (
       !ingredienteTemp.nombre.trim() ||
@@ -473,7 +510,8 @@ function Lotes({ usuario, onAbrirSidebar }) {
         valorUnitario: Number(nuevo.valorUnitario) || 0,
         perdidas: perdidasForm,
         base: Number(nuevo.base) || 0,       // 👈 NUEVO
-        ingredientes: nuevo.ingredientes || [],
+        // eslint-disable-next-line no-unused-vars
+        ingredientes: (nuevo.ingredientes || []).map(({ editarPrecio, ...resto }) => resto),
         costoTotal: costoTotalForm,
         creadoPor: usuario?.uid || 'anónimo',
         creadoPorEmail: usuario?.email || 'anónimo',
@@ -622,6 +660,9 @@ function Lotes({ usuario, onAbrirSidebar }) {
               </Button>
             </div>
           </div>
+
+          {/* ✨ Registrar lote con IA (texto o voz) */}
+          <LotePorTexto onBorrador={aplicarBorrador} />
 
           {error && <div className="error-msg">{error}</div>}
 
@@ -832,9 +873,31 @@ function Lotes({ usuario, onAbrirSidebar }) {
                           <span className="ingrediente-cant">
                             {ing.cantidad} {abrevUnidad(ing.unidad)}
                           </span>
-                          <span className="ingrediente-precio">
-                            ${ing.valorUnitario?.toLocaleString('es-CO')}
-                          </span>
+                          {!ing.editarPrecio ? (
+                            <span className="ingrediente-precio">
+                              ${ing.valorUnitario?.toLocaleString('es-CO')}
+                            </span>
+                          ) : (
+                            // ✨ Sin precio (viene de la IA): se completa aquí mismo
+                            <input
+                              type="number"
+                              min="0"
+                              placeholder="Precio c/u"
+                              value={ing.valorUnitario || ''}
+                              className="ingrediente-precio-input"
+                              style={{ width: 90, border: '2px solid #F26B7A', borderRadius: 8, padding: '4px 6px' }}
+                              onChange={(e) =>
+                                setNuevo((prev) => ({
+                                  ...prev,
+                                  ingredientes: prev.ingredientes.map((x) =>
+                                    x.id === ing.id
+                                      ? { ...x, valorUnitario: Number(e.target.value) || 0 }
+                                      : x
+                                  )
+                                }))
+                              }
+                            />
+                          )}
                           <span className="ingrediente-subtotal">
                             $
                             {(ing.cantidad * ing.valorUnitario).toLocaleString(

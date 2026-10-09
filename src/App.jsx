@@ -10,6 +10,7 @@ import Clientes from './pages/Clientes';
 import Reportes from './pages/Reportes';
 import Lotes from './pages/Lotes';
 import Gastos from './pages/Gastos';
+import AsistenteIA from './components/AsistenteIA';
 
 function App() {
   const [usuario, setUsuario] = useState(null);
@@ -101,6 +102,7 @@ function App() {
         />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
+      <AsistenteIA />
     </HashRouter>
   );
 }

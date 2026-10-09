@@ -14,6 +14,7 @@ import { db } from '../firebase';
 import TopBar from '../components/TopBar';
 import Button from '../components/Button';
 import ClienteSelector from '../components/ClienteSelector';
+import VentaPorTexto from '../components/VentaPorTexto';
 import '../styles/Modulos.css';
 
 const ENTREGAS = ['Pendiente', 'Entregado'];
@@ -255,6 +256,51 @@ function Ventas({ usuario, onAbrirSidebar }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nuevo.loteId]);
 
+  // ✨ IA: prellena el formulario con el borrador interpretado (NO guarda)
+  const aplicarBorrador = (b) => {
+    const avisos = [];
+    const valorHablado = b.valorUnitario != null ? Number(b.valorUnitario) : null;
+    const valorLote = b.loteId ? Number(getValorUnitarioLote(b.loteId)) || null : null;
+    const valor = valorHablado ?? valorLote;
+    const cantidad = b.cantidad != null ? Number(b.cantidad) : null;
+
+    let abono = b.abono != null ? Number(b.abono) : null;
+    if (b.pagoCompleto) {
+      if (cantidad && valor) abono = cantidad * valor;
+      else avisos.push('Dijiste que pagó todo, pero falta el precio para calcular el abono.');
+    }
+
+    if (!b.clienteId) {
+      avisos.push(
+        b.clienteNombreMencionado
+          ? `No encontré al cliente "${b.clienteNombreMencionado}". Elígelo o regístralo en Clientes.`
+          : 'No identifiqué el cliente, elígelo en la lista.'
+      );
+    }
+    if (!valor) avisos.push('Falta el valor unitario: escríbelo o elige un lote con precio.');
+
+    setNuevo({
+      clienteId: b.clienteId || '',
+      loteId: b.loteId || '',
+      cantidad: cantidad != null ? String(cantidad) : '',
+      valorUnitario: valor != null ? String(valor) : '',
+      abono: abono != null ? String(abono) : '',
+      entrega: b.entrega || 'Pendiente',
+      estado: 'Pendiente'
+    });
+    setMostrarForm(true);
+
+    // El efecto del lote reescribe el valor unitario con el del lote;
+    // si el usuario dijo un precio distinto, lo reponemos después.
+    if (valorHablado != null && b.loteId) {
+      setTimeout(
+        () => setNuevo((prev) => ({ ...prev, valorUnitario: String(valorHablado) })),
+        50
+      );
+    }
+    return avisos;
+  };
+
   // ➕ Agregar venta
   const agregar = async () => {
     const cliente = clientes.find((c) => c.id === nuevo.clienteId);
@@ -478,6 +524,15 @@ function Ventas({ usuario, onAbrirSidebar }) {
               </Button>
             </div>
           </div>
+
+          {/* ✨ Registrar venta con IA (texto o voz) */}
+          {clientes.length > 0 && (
+            <VentaPorTexto
+              clientes={clientes}
+              lotes={lotes}
+              onBorrador={aplicarBorrador}
+            />
+          )}
 
           {/* 🔍 BUSCADOR Y FILTROS */}
           {!mostrarForm && (
