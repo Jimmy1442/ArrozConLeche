@@ -4,15 +4,15 @@ import { preguntarAlNegocio } from '../services/ia';
 import '../styles/Asistente.css';
 
 const SUGERENCIAS = [
-  '¿Cuánto he vendido este mes?',
   '¿Quién me debe plata?',
-  '¿Qué lote me ha dejado más ganancia?',
-  '¿Cuántas entregas tengo pendientes?'
+  '¿Cuál es el ingrediente más costoso?',
+  '¿Cuántos me quedan por vender del último lote?',
+  '¿Cómo le pongo precio a un producto nuevo?'
 ];
 
 const SALUDO = {
   rol: 'ia',
-  texto: '¡Hola! 🍚 Pregúntame lo que quieras sobre tus ventas, lotes, gastos o clientes.'
+  texto: '¡Hola! 🍚 Pregúntame lo que quieras: tus ventas, lotes, ingredientes, deudas, cómo usar la app o cualquier duda del negocio.'
 };
 
 function AsistenteIA() {
